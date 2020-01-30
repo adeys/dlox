@@ -30,15 +30,15 @@ class Lexer {
 	List<Token> tokenize() {
 		while(!eof()) {
 			start = current;
-			getNext();
+			_getNext();
 		}
 
 		this.tokens.add(new Token(TokenType.EOF, "", null, line));
 		return this.tokens;
 	}
 
-	void getNext() {
-		var char = advance();
+	void _getNext() {
+		var char = _advance();
 		switch (char) {
 			// Single character tokens
 			case '(': addToken(TokenType.LEFT_PAREN, null); break;
@@ -52,20 +52,20 @@ class Lexer {
 			case '-': addToken(TokenType.MINUS, null); break;
 			case '*': addToken(TokenType.STAR, null); break;
 			case '/': {
-					if (match('/')) {
-						while(peek() != '\n' && !eof()) advance();
-					} else if (match('*')) {
-						getMultiLineComment();
+					if (_match('/')) {
+						while(_peek() != '\n' && !eof()) _advance();
+					} else if (_match('*')) {
+						_getMultiLineComment();
 					} else {
 						addToken(TokenType.SLASH, null); 
 					}
 					break;
 				}
 			// One or two characters tokens
-			case '!': addToken(match('=') ? TokenType.BANG_EQUAL : TokenType.BANG, null); break;
-			case '=': addToken(match('=') ? TokenType.EQUAL_EQUAL : TokenType.EQUAL, null); break;
-			case '<': addToken(match('=') ? TokenType.LESS_EQUAL : TokenType.LESS, null); break;
-			case '>': addToken(match('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER, null); break;
+			case '!': addToken(_match('=') ? TokenType.BANG_EQUAL : TokenType.BANG, null); break;
+			case '=': addToken(_match('=') ? TokenType.EQUAL_EQUAL : TokenType.EQUAL, null); break;
+			case '<': addToken(_match('=') ? TokenType.LESS_EQUAL : TokenType.LESS, null); break;
+			case '>': addToken(_match('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER, null); break;
 			// Whitespaces
 			case ' ':
 			case '\t':
@@ -75,12 +75,12 @@ class Lexer {
 				line++;
 				break;
 			// Literals
-			case '"': getString(); break;
+			case '"': _getString(); break;
 			default:
-				if (isDigit(char)) {
-					getNumber();
-				} else if (isAlpha(char)) {
-					getIdentifier();
+				if (_isDigit(char)) {
+					_getNumber();
+				} else if (_isAlpha(char)) {
+					_getIdentifier();
 				} else {
 					Lox.error(line, 'Unexpected character $char');
 					break;
@@ -88,10 +88,10 @@ class Lexer {
 		}
 	}
 
-	void getString() {
-		while(peek() != '"' && !eof()) {
-			if (peek() == '\n') line++;
-			advance();
+	void _getString() {
+		while(_peek() != '"' && !eof()) {
+			if (_peek() == '\n') line++;
+			_advance();
 		}
 
 		if (eof()) {
@@ -99,25 +99,25 @@ class Lexer {
 			return;
 		}
 
-		advance();
+		_advance();
 
 		addToken(TokenType.STRING, source.substring(start + 1, current - 1));
 	}
 
-	void getNumber() {
-		while(isDigit(peek())) advance();
+	void _getNumber() {
+		while(_isDigit(_peek())) _advance();
 
-		if (peek() == '.' && isDigit(peekNext())) {
-			advance();
+		if (_peek() == '.' && _isDigit(_peekNext())) {
+			_advance();
 
-			while(isDigit(peek())) advance();
+			while(_isDigit(_peek())) _advance();
 		}
 
 		addToken(TokenType.NUMBER, double.parse(source.substring(start, current)));
 	}
 
-	void getIdentifier() {
-		while(isAlphaNumeric(peek())) advance();
+	void _getIdentifier() {
+		while(_isAlphaNumeric(_peek())) _advance();
 
 		var token = source.substring(start, current);
 
@@ -127,10 +127,10 @@ class Lexer {
 		addToken(type, null);
 	}
 
-	void getMultiLineComment() {
-		while (!eof() && peek() != '*') {
-			if (peek() == '\n') line++;
-			advance();
+	void _getMultiLineComment() {
+		while (!eof() && _peek() != '*') {
+			if (_peek() == '\n') line++;
+			_advance();
 		}
 
 		if (eof()) {
@@ -138,13 +138,13 @@ class Lexer {
 			return;
 		}
 
-		advance();
-		if (peek() == '/') {
-			advance();
+		_advance();
+		if (_peek() == '/') {
+			_advance();
 			return;
 		}
 
-		getMultiLineComment();
+		_getMultiLineComment();
 	}
 
 	void addToken(TokenType type, Object literal) {
@@ -152,25 +152,25 @@ class Lexer {
 		tokens.add(token);
 	}
 
-	String advance() {
+	String _advance() {
 		current++;
 		return source[current - 1];
 	}
 
-	String peek() {
+	String _peek() {
 		return eof() ? '' : source[current];
 	}
 
-	String peekNext() {
+	String _peekNext() {
 		if (current + 1 >= source.length) return '';
 		
 		return source[current + 1];
 	}
 
-	bool match(String expected) {
+	bool _match(String expected) {
 		if (eof()) return false;
 
-		if (peek() != expected) return false;
+		if (_peek() != expected) return false;
 
 		current++;
 		return true;
@@ -180,15 +180,15 @@ class Lexer {
 		return current >= source.length;
 	}
 
-	bool isDigit(String char) {
+	bool _isDigit(String char) {
 		return RegExp('[0-9]').hasMatch(char);
 	}
 
-	bool isAlpha(String char) {
+	bool _isAlpha(String char) {
 		return RegExp('[a-zA-Z]').hasMatch(char);
 	}
 
-	bool isAlphaNumeric(String char) {
-		return isAlpha(char) || isDigit(char);
+	bool _isAlphaNumeric(String char) {
+		return _isAlpha(char) || _isDigit(char);
 	}
 }

@@ -1,0 +1,9 @@
+#! /usr/bin/dart
+
+import '../src/tokens.dart';
+import '../src/expr.dart';
+import '../tool/AstPrinter.dart';
+
+main() {
+	
+}
