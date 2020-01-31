@@ -1,7 +1,10 @@
 import 'dart:io';
 
+import 'expr.dart';
 import 'lexer.dart';
+import 'parser.dart';
 import 'tokens.dart';
+import '../tool/AstPrinter.dart';
 
 class Lox {
 	static bool errored = false;
@@ -28,17 +31,27 @@ class Lox {
 		Lexer lexer = new Lexer(program);
 
 		List<Token> tokens = lexer.tokenize();
+		Parser parser = new Parser(tokens);
+		Expr expr = parser.parse();
 
-		for (Token token in tokens) {
-			print(token);
-		}
+		if (errored) return;
+
+		print(new AstPrinter().print(expr));
 	}
 
 	static void error(int line, String message) {
-		report(line, "", message);
+		_report(line, "", message);
 	}
 
-	static void report(int line, String where, String message) {
+	static void parseError(Token token, String message) {
+		if (token.type == TokenType.EOF) {
+			_report(token.line, " at end", message);
+		} else {
+			_report(token.line, " at '" + token.lexeme + "'", message);
+		}
+	}
+
+	static void _report(int line, String where, String message) {
 		stderr.writeln('[line $line]: Error $where: $message');
 		errored = true;
 	}
