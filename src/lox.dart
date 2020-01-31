@@ -1,13 +1,17 @@
 import 'dart:io';
 
+import 'error.dart';
 import 'expr.dart';
+import 'interpreter.dart';
 import 'lexer.dart';
 import 'parser.dart';
 import 'tokens.dart';
-import '../tool/AstPrinter.dart';
 
 class Lox {
 	static bool errored = false;
+	static bool hadRuntimeError = false;
+
+	static Interpreter _interpreter = new Interpreter();
 	
 	void prompt() {
 		stdout.writeln('Dart Lox v1.0');
@@ -34,9 +38,10 @@ class Lox {
 		Parser parser = new Parser(tokens);
 		Expr expr = parser.parse();
 
-		if (errored) return;
+		if (errored) exit(65);
+		if (hadRuntimeError) exit(70);
 
-		print(new AstPrinter().print(expr));
+		_interpreter.interpret(expr);
 	}
 
 	static void error(int line, String message) {
@@ -49,6 +54,11 @@ class Lox {
 		} else {
 			_report(token.line, " at '" + token.lexeme + "'", message);
 		}
+	}
+
+	static void runtimeError(RuntimeError err) {
+		stderr.writeln(err.message + '\n[line ' + err.token.line.toString() + '].');
+		hadRuntimeError = true;
 	}
 
 	static void _report(int line, String where, String message) {
