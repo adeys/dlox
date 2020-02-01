@@ -5,6 +5,7 @@ import 'expr.dart';
 import 'interpreter.dart';
 import 'lexer.dart';
 import 'parser.dart';
+import 'stmt.dart';
 import 'tokens.dart';
 
 class Lox {
@@ -36,12 +37,12 @@ class Lox {
 
 		List<Token> tokens = lexer.tokenize();
 		Parser parser = new Parser(tokens);
-		Expr expr = parser.parse();
+		List<Stmt> stmts = parser.parse();
 
 		if (errored) exit(65);
 		if (hadRuntimeError) exit(70);
 
-		_interpreter.interpret(expr);
+		_interpreter.interpret(stmts);
 	}
 
 	static void error(int line, String message) {

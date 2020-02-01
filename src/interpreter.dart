@@ -2,16 +2,26 @@ import './expr.dart';
 import './tokens.dart';
 import './error.dart';
 import 'lox.dart';
+import 'stmt.dart';
 
-class Interpreter implements Visitor {
+class Interpreter implements ExprVisitor, StmtVisitor {
 
-	void interpret(Expr expression) {
+	void interpret(List<Stmt> statements) {
 		try {
-			Object value = _evaluate(expression);
-			print(_stringify(value));
+			for (Stmt stmt in statements) {
+				_execute(stmt);
+			}
 		} on RuntimeError catch (e) {
 			Lox.runtimeError(e);
 		}
+	}
+
+	void _execute(Stmt stmt) {
+		stmt.accept(this);
+	}
+
+	Object _evaluate(Expr expr) {
+		return expr.accept(this);
 	}
 
 	String _stringify(Object object) {
@@ -26,10 +36,6 @@ class Interpreter implements Visitor {
 		} 
 		
 		return object.toString();
-	}
-
-	Object _evaluate(Expr expr) {
-		return expr.accept(this);
 	}
 
 	@override
@@ -136,5 +142,18 @@ class Interpreter implements Visitor {
 	void _checkNumOperands(Token token, Object left, Object right) {
 		if (left is double && right is double) return;
 		throw new RuntimeError(token, "Operands must be numbers.");
+	}
+
+	@override
+	void visitExpressionStmt(ExpressionStmt stmt) {
+		_evaluate(stmt.expression);
+		return null;
+	}
+
+	@override
+	void visitPrintStmt(PrintStmt stmt) {
+		Object val = _evaluate(stmt.expression);
+		print(_stringify(val));
+		return null;
 	}
 }

@@ -20,7 +20,7 @@ class AstGenerator {
 		
 		// Define base class
 		buffer..writeln('abstract class $base {')
-			..writeln('    accept(Visitor visitor);')
+			..writeln('    accept(${base}Visitor visitor);')
 			..writeln('}');
 
 		// Define subclasses
@@ -43,7 +43,7 @@ class AstGenerator {
 			buffer.writeln('\t}\n');
 
 			// Define visitor
-			buffer..writeln('\taccept(Visitor visitor) {')
+			buffer..writeln('\taccept(${base}Visitor visitor) {')
 				..writeln('\t\treturn visitor.visit${name}${base}(this);')
 				..writeln('\t}')
 
@@ -53,7 +53,7 @@ class AstGenerator {
 
 	void defineVisitor(StringBuffer buffer, String base, List<String> types) {
 		// Define base class
-		buffer..writeln('abstract class Visitor {');
+		buffer..writeln('abstract class ${base}Visitor {');
 
 		// Define subclasses
 		buffer.writeln('');

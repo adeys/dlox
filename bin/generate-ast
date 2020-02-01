@@ -5,11 +5,11 @@ import 'dart:io';
 
 main(List<String> argv) {
 	if (argv.length != 1) {
-		print("Usage: generate-ast <file>");
+		print("Usage: generate <outdir>");
 		exit(1);
 	} else {
-		String file = argv[0];
-		AstGenerator gen = new AstGenerator(file);
+		String dir = argv[0];
+		AstGenerator gen = new AstGenerator('$dir/expr.dart');
 
 		String base = 'Expr';
 		List<String> types = [
@@ -23,8 +23,25 @@ main(List<String> argv) {
 		gen.defineExpr(buffer, base, types);
 		gen.defineVisitor(buffer, base, types);
 
-		print('Generating ast file $file...');
+		print('Generating ast file $dir/expr.dart...');
 		gen.generate(buffer);
-		print('Generated ast file $file...');
+		print('Generated ast file $dir/expr.dart...');
+
+		// Generate statements
+		gen = new AstGenerator('$dir/stmt.dart');
+
+		base = 'Stmt';
+		types = [
+			"Expression : Expr expression",
+			"Print : Expr expression"
+		];
+		buffer.clear();
+
+		gen.defineExpr(buffer, base, types);
+		gen.defineVisitor(buffer, base, types);
+
+		print('Generating statement file $dir/stmt.dart...');
+		gen.generate(buffer);
+		print('Generated statement file $dir/stmt.dart...');
 	}
 }

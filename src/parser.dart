@@ -1,6 +1,7 @@
 import './tokens.dart';
 import './expr.dart';
 import 'lox.dart';
+import 'stmt.dart';
 
 class Parser {
 	final List<Token> _tokens;
@@ -8,12 +9,33 @@ class Parser {
 
 	Parser(this._tokens);
 
-	Expr parse() {
-		try {
-			return _getExpression();
-		} on ParseError catch (e) {
-			return null;
+	List<Stmt> parse() {
+		List<Stmt> statements = new List();
+		while (!eof()) {
+			statements.add(_getStatement());
 		}
+
+		return statements;
+	}
+
+	Stmt _getStatement() {
+		if (_match([TokenType.PRINT])) return _getPrintStatement();
+
+		return _getExprStatement();
+	}
+
+	PrintStmt _getPrintStatement() {
+		Expr expr = _getExpression();
+		_consume(TokenType.SEMICOLON, "Expect ';' after value.");
+
+		return new PrintStmt(expr);
+	}
+
+	ExpressionStmt _getExprStatement() {
+		Expr expr = _getExpression();
+		_consume(TokenType.SEMICOLON, "Expect ';' after expression.");
+
+		return new ExpressionStmt(expr);
 	}
 
 	Expr _getExpression() {

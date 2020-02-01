@@ -1,7 +1,7 @@
 import './tokens.dart';
 
 abstract class Expr {
-    accept(Visitor visitor);
+    accept(ExprVisitor visitor);
 }
 
 class BinaryExpr extends Expr {
@@ -15,7 +15,7 @@ class BinaryExpr extends Expr {
 		this.right = right;
 	}
 
-	accept(Visitor visitor) {
+	accept(ExprVisitor visitor) {
 		return visitor.visitBinaryExpr(this);
 	}
 }
@@ -28,7 +28,7 @@ class GroupingExpr extends Expr {
 		this.expr = expr;
 	}
 
-	accept(Visitor visitor) {
+	accept(ExprVisitor visitor) {
 		return visitor.visitGroupingExpr(this);
 	}
 }
@@ -41,7 +41,7 @@ class LiteralExpr extends Expr {
 		this.value = value;
 	}
 
-	accept(Visitor visitor) {
+	accept(ExprVisitor visitor) {
 		return visitor.visitLiteralExpr(this);
 	}
 }
@@ -56,13 +56,13 @@ class UnaryExpr extends Expr {
 		this.right = right;
 	}
 
-	accept(Visitor visitor) {
+	accept(ExprVisitor visitor) {
 		return visitor.visitUnaryExpr(this);
 	}
 }
 
 
-abstract class Visitor {
+abstract class ExprVisitor {
 
 	visitBinaryExpr(BinaryExpr expr) {
 		return expr.accept(this);
