@@ -31,6 +31,23 @@ class ExpressionStmt extends Stmt {
 }
 
 
+class FunctionStmt extends Stmt {
+	Token name;
+	List<Token> params;
+	List<Stmt> body;
+
+	FunctionStmt(Token name, List<Token> params, List<Stmt> body) {
+		this.name = name;
+		this.params = params;
+		this.body = body;
+	}
+
+	accept(StmtVisitor visitor) {
+		return visitor.visitFunctionStmt(this);
+	}
+}
+
+
 class IfStmt extends Stmt {
 	Expr condition;
 	Stmt thenStmt;
@@ -57,6 +74,21 @@ class PrintStmt extends Stmt {
 
 	accept(StmtVisitor visitor) {
 		return visitor.visitPrintStmt(this);
+	}
+}
+
+
+class ReturnStmt extends Stmt {
+	Token keyword;
+	Expr value;
+
+	ReturnStmt(Token keyword, Expr value) {
+		this.keyword = keyword;
+		this.value = value;
+	}
+
+	accept(StmtVisitor visitor) {
+		return visitor.visitReturnStmt(this);
 	}
 }
 
@@ -101,11 +133,19 @@ abstract class StmtVisitor {
 		return expr.accept(this);
 	}
 
+	visitFunctionStmt(FunctionStmt expr) {
+		return expr.accept(this);
+	}
+
 	visitIfStmt(IfStmt expr) {
 		return expr.accept(this);
 	}
 
 	visitPrintStmt(PrintStmt expr) {
+		return expr.accept(this);
+	}
+
+	visitReturnStmt(ReturnStmt expr) {
 		return expr.accept(this);
 	}
 

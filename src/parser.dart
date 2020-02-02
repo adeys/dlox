@@ -20,6 +20,7 @@ class Parser {
 
 	Stmt _getDeclaration() {
 		try {
+			if (_match([TokenType.FUN])) return _getFuncDeclaration('function');
 			if (_match([TokenType.VAR])) return _getVarDeclaration();
 
 			return _getStatement();
@@ -27,6 +28,28 @@ class Parser {
 			_synchronize();
 			return null;
 		}
+	}
+
+	FunctionStmt _getFuncDeclaration(String type) {
+		Token name = _consume(TokenType.IDENTIFIER, "Expect ${type} name.");
+
+		_consume(TokenType.LEFT_PAREN, "Expect '(' after $type name.");
+		List<Token> params = [];
+		if (!_check(TokenType.RIGHT_PAREN)) {
+			do {
+				if (params.length >= 255) {
+					error(_peek(), "Cannot have more than 255 parameters.");
+				} 
+				params.add(_consume(TokenType.IDENTIFIER, "Expect parameter name."));
+			} while (_match([TokenType.COMMA]));
+		}
+		
+		_consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.");
+
+		_consume(TokenType.LEFT_BRACE, "Expect '{' before $type body.");
+		List<Stmt> body = _getBlockStatement();
+
+		return new FunctionStmt(name, params, body);
 	}
 
 	VarStmt _getVarDeclaration() {
@@ -45,6 +68,7 @@ class Parser {
     	if (_match([TokenType.FOR])) return _getForStatement();
     	if (_match([TokenType.IF])) return _getIfStatement();
 		if (_match([TokenType.PRINT])) return _getPrintStatement();
+		if (_match([TokenType.RETURN])) return _getReturnStatement();
 		if (_match([TokenType.WHILE])) return _getWhileStatement();
 		if (_match([TokenType.LEFT_BRACE])) return new BlockStmt(_getBlockStatement());
 
@@ -56,6 +80,19 @@ class Parser {
 		_consume(TokenType.SEMICOLON, "Expect ';' after value.");
 
 		return new PrintStmt(expr);
+	}
+
+	ReturnStmt _getReturnStatement() {
+		Token keyword = _previous();
+
+		Expr val = null;
+		if (!_match([TokenType.SEMICOLON])) {
+			val = _getExpression();
+		}
+
+		_consume(TokenType.SEMICOLON,  "Expect ';' after return value.");
+
+		return new ReturnStmt(keyword, val);
 	}
 
 	Stmt _getForStatement() {
@@ -93,7 +130,7 @@ class Parser {
 		body = new WhileStmt(cond, body);
 
 		if (init != null) {
-			body = new BlockStmt([init, body]);	
+			body = new BlockStmt([init, body]);
 		}
 
 		return body;
@@ -245,7 +282,36 @@ class Parser {
 			return new UnaryExpr(op, right);
 		}
 
-		return _getPrimary();
+		return _getCall();
+	}
+
+	Expr _getCall() {
+		Expr expr = _getPrimary();
+
+		while (true) {
+			if (_match([TokenType.LEFT_PAREN])) {
+				expr = _finishCall(expr);
+			} else {
+				break;
+			}
+		}
+
+		return expr;
+	}
+
+	Expr _finishCall(Expr expr) {
+		List<Expr> args = [];
+
+		if (!_check(TokenType.RIGHT_PAREN)) {
+			do {
+				if (args.length >= 255) error(_peek(), "Cannot have more than 255 arguments.");
+				args.add(_getExpression());
+			} while (_match([TokenType.COMMA]));
+		}
+
+		Token paren = _consume(TokenType.RIGHT_PAREN, "Expected ')' after arguments list.");
+
+		return new CallExpr(expr, paren, args);
 	}
 
 	Expr _getPrimary() {

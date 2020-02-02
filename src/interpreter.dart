@@ -4,10 +4,19 @@ import './error.dart';
 import 'env.dart';
 import 'lox.dart';
 import 'stmt.dart';
+import 'struct.dart';
 
 class Interpreter implements ExprVisitor, StmtVisitor {
+	final Environment globals = new Environment(null);
+	Environment _env;
 
-	Environment _env = new Environment(null);
+	Interpreter() {
+		globals.define('clock', new NativeFunction((Interpreter interpreter, List<Object> args) {
+			return DateTime.now().millisecondsSinceEpoch/1000;
+		}, 0));
+
+		_env = globals;
+	}
 
 	void interpret(List<Stmt> statements) {
 		try {
@@ -41,7 +50,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 		return object.toString();
 	}
 
-	void _executeBlock(List<Stmt> statements, Environment env) {
+	void executeBlock(List<Stmt> statements, Environment env) {
 		Environment prev = _env;
 
 		try {
@@ -199,7 +208,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 	@override
 	void visitBlockStmt(BlockStmt expr) {
-		_executeBlock(expr.statements, new Environment(_env));
+		executeBlock(expr.statements, new Environment(_env));
 
 		return null;
 	}
@@ -234,5 +243,38 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 		}
 
 		return null;
+	}
+
+	@override
+	Object visitCallExpr(CallExpr expr) {
+		Object callee = _evaluate(expr.callee);
+
+		List<Object> args = expr.arguments.map((arg) => _evaluate(arg)).toList();
+
+		if (!(callee is LoxCallable)) {
+			throw new RuntimeError(expr.paren, "Can only call functions and classes.");
+		}
+
+		LoxCallable function = callee as LoxCallable;
+		if (args.length != function.arity()) {
+			throw new RuntimeError(expr.paren, "Expected ${function.arity()} arguments but got ${args.length}.");
+		}
+
+		return function.call(this, args);
+	}
+
+	@override
+	visitFunctionStmt(FunctionStmt stmt) {
+		LoxFunction func = new LoxFunction(stmt, _env);
+		_env.define(stmt.name.lexeme, func);
+		return null;
+	}
+
+	@override
+	void visitReturnStmt(ReturnStmt expr) {
+		Object value = null;
+		if (expr.value != null) value = _evaluate(expr.value);
+
+		throw new Return(value);
 	}
 }

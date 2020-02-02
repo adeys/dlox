@@ -11,3 +11,9 @@ class RuntimeError {
 	}
 
 }
+
+class Return {
+	final Object value;
+
+	Return(Object val): value = val;
+}

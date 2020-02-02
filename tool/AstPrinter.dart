@@ -52,4 +52,10 @@ class AstPrinter implements ExprVisitor {
     // TODO: implement visitLogicalExpr
     return null;
   }
+
+  @override
+  visitCallExpr(CallExpr expr) {
+    // TODO: implement visitCallExpr
+    return null;
+  }
 }

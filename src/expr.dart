@@ -36,6 +36,23 @@ class BinaryExpr extends Expr {
 }
 
 
+class CallExpr extends Expr {
+	Expr callee;
+	Token paren;
+	List<Expr> arguments;
+
+	CallExpr(Expr callee, Token paren, List<Expr> arguments) {
+		this.callee = callee;
+		this.paren = paren;
+		this.arguments = arguments;
+	}
+
+	accept(ExprVisitor visitor) {
+		return visitor.visitCallExpr(this);
+	}
+}
+
+
 class GroupingExpr extends Expr {
 	Expr expr;
 
@@ -114,6 +131,10 @@ abstract class ExprVisitor {
 	}
 
 	visitBinaryExpr(BinaryExpr expr) {
+		return expr.accept(this);
+	}
+
+	visitCallExpr(CallExpr expr) {
 		return expr.accept(this);
 	}
 

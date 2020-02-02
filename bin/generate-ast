@@ -15,6 +15,7 @@ main(List<String> argv) {
 		List<String> types = [
 			"Assign : Token name, Expr value",
 			"Binary : Expr left, Token op, Expr right",
+			"Call : Expr callee, Token paren, List<Expr> arguments",
 			"Grouping : Expr expr",
 			"Literal : Object value",
 			"Logical : Expr left, Token opt, Expr right",
@@ -37,8 +38,10 @@ main(List<String> argv) {
 		types = [
 			"Block : List<Stmt> statements",
 			"Expression : Expr expression",
+			"Function : Token name, List<Token> params, List<Stmt> body",
 			"If : Expr condition, Stmt thenStmt, Stmt elseStmt",
 			"Print : Expr expression",
+			"Return : Token keyword, Expr value",
 			"Var : Token name, Expr initializer",
 			"While : Expr condition, Stmt body"
 		];
