@@ -156,4 +156,16 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 		print(_stringify(val));
 		return null;
 	}
+
+  @override
+  visitVarStmt(VarStmt expr) {
+    // TODO: implement visitVarStmt
+    return null;
+  }
+
+  @override
+  visitVariableExpr(VariableExpr expr) {
+    // TODO: implement visitVariableExpr
+    return null;
+  }
 }

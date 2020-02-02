@@ -62,6 +62,19 @@ class UnaryExpr extends Expr {
 }
 
 
+class VariableExpr extends Expr {
+	Token name;
+
+	VariableExpr(Token name) {
+		this.name = name;
+	}
+
+	accept(ExprVisitor visitor) {
+		return visitor.visitVariableExpr(this);
+	}
+}
+
+
 abstract class ExprVisitor {
 
 	visitBinaryExpr(BinaryExpr expr) {
@@ -77,6 +90,10 @@ abstract class ExprVisitor {
 	}
 
 	visitUnaryExpr(UnaryExpr expr) {
+		return expr.accept(this);
+	}
+
+	visitVariableExpr(VariableExpr expr) {
 		return expr.accept(this);
 	}
 

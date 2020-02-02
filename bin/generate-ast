@@ -16,7 +16,8 @@ main(List<String> argv) {
 			"Binary : Expr left, Token op, Expr right",
 			"Grouping : Expr expr",
 			"Literal : Object value",
-			"Unary : Token op, Expr right"
+			"Unary : Token op, Expr right",
+			"Variable : Token name"
 		];
 		StringBuffer buffer = new StringBuffer();
 
@@ -33,7 +34,8 @@ main(List<String> argv) {
 		base = 'Stmt';
 		types = [
 			"Expression : Expr expression",
-			"Print : Expr expression"
+			"Print : Expr expression",
+			"Var : Token name, Expr initializer"
 		];
 		buffer.clear();
 

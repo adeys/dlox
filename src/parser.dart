@@ -12,10 +12,33 @@ class Parser {
 	List<Stmt> parse() {
 		List<Stmt> statements = new List();
 		while (!eof()) {
-			statements.add(_getStatement());
+			statements.add(_getDeclaration());
 		}
 
 		return statements;
+	}
+
+	Stmt _getDeclaration() {
+		try {
+			if (_match([TokenType.VAR])) return _getVarDeclaration();
+
+			return _getStatement();
+		} on ParseError catch (_) {
+			_synchronize();
+			return null;
+		}
+	}
+
+	VarStmt _getVarDeclaration() {
+		Token id = _consume(TokenType.IDENTIFIER, "Expected variable name.");
+
+		LiteralExpr expr = null;
+		if (_match([TokenType.EQUAL])) {
+			expr = _getExpression();
+		}
+
+		_consume(TokenType.SEMICOLON, "Expected ';' after variable declaration.");
+		return new VarStmt(id, expr);
 	}
 
 	Stmt _getStatement() {
@@ -107,6 +130,10 @@ class Parser {
 
 		if (_match([TokenType.NUMBER, TokenType.STRING])) {
 			return new LiteralExpr(_previous().literal);
+		}
+
+		if (_match([TokenType.IDENTIFIER])) {
+			return new LiteralExpr(_previous());
 		}
 
 		if (_match([TokenType.LEFT_PAREN])) {

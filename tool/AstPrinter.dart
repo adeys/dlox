@@ -36,4 +36,10 @@ class AstPrinter implements ExprVisitor {
 	String visitUnaryExpr(UnaryExpr expr) {
 		return this.parenthesize(expr.op.lexeme, [expr.right]);
 	}
+
+  @override
+  visitVariableExpr(VariableExpr expr) {
+    // TODO: implement visitVariableExpr
+    return null;
+  }
 }
