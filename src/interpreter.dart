@@ -64,19 +64,19 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 			case TokenType.BANG_EQUAL: return !_isEqual(left, right);
 			case TokenType.LESS: {
 					_checkNumOperands(expr.op, left, right);
-					return (left as double) < (left as double);
+					return (left as double) < (right as double);
 				}
 			case TokenType.LESS_EQUAL: {
 					_checkNumOperands(expr.op, left, right);
-					return (left as double) <= (left as double);
+					return (left as double) <= (right as double);
 				}
 			case TokenType.GREATER_EQUAL: {
 					_checkNumOperands(expr.op, left, right);
-					return (left as double) >= (left as double);
+					return (left as double) >= (right as double);
 				}
 			case TokenType.GREATER: {
 					_checkNumOperands(expr.op, left, right);
-					return (left as double) > (left as double);
+					return (left as double) > (right as double);
 				}
 			case TokenType.MINUS: {
 					_checkNumOperands(expr.op, left, right);
@@ -200,6 +200,38 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 	@override
 	void visitBlockStmt(BlockStmt expr) {
 		_executeBlock(expr.statements, new Environment(_env));
+
+		return null;
+	}
+
+	@override
+	Object visitIfStmt(IfStmt expr) {
+		if (_isTruthy(_evaluate(expr.condition))) {
+			_execute(expr.thenStmt);
+		} else if (expr.elseStmt != null) {
+			_execute(expr.elseStmt);
+		}
+
+		return null;
+	}
+
+	@override
+	Object visitLogicalExpr(LogicalExpr expr) {
+		Object left = _evaluate(expr.left);
+		if (expr.opt.type == TokenType.OR) {
+			if (_isTruthy(left)) return left;
+		} else {
+			if (!_isTruthy(left)) return left;
+		} 
+		
+		return _evaluate(expr.right);
+	}
+
+	@override
+	void visitWhileStmt(WhileStmt expr) {
+		while(_isTruthy(_evaluate(expr.condition))) {
+			_execute(expr.body);
+		}
 
 		return null;
 	}

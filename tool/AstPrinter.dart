@@ -46,4 +46,10 @@ class AstPrinter implements ExprVisitor {
   visitAssignExpr(AssignExpr expr) {
     return this.parenthesize(expr.name.lexeme, [expr.value]);
   }
+
+  @override
+  visitLogicalExpr(LogicalExpr expr) {
+    // TODO: implement visitLogicalExpr
+    return null;
+  }
 }

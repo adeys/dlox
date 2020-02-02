@@ -17,6 +17,7 @@ main(List<String> argv) {
 			"Binary : Expr left, Token op, Expr right",
 			"Grouping : Expr expr",
 			"Literal : Object value",
+			"Logical : Expr left, Token opt, Expr right",
 			"Unary : Token op, Expr right",
 			"Variable : Token name"
 		];
@@ -36,8 +37,10 @@ main(List<String> argv) {
 		types = [
 			"Block : List<Stmt> statements",
 			"Expression : Expr expression",
+			"If : Expr condition, Stmt thenStmt, Stmt elseStmt",
 			"Print : Expr expression",
-			"Var : Token name, Expr initializer"
+			"Var : Token name, Expr initializer",
+			"While : Expr condition, Stmt body"
 		];
 		buffer.clear();
 

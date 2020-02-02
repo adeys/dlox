@@ -62,6 +62,23 @@ class LiteralExpr extends Expr {
 }
 
 
+class LogicalExpr extends Expr {
+	Expr left;
+	Token opt;
+	Expr right;
+
+	LogicalExpr(Expr left, Token opt, Expr right) {
+		this.left = left;
+		this.opt = opt;
+		this.right = right;
+	}
+
+	accept(ExprVisitor visitor) {
+		return visitor.visitLogicalExpr(this);
+	}
+}
+
+
 class UnaryExpr extends Expr {
 	Token op;
 	Expr right;
@@ -105,6 +122,10 @@ abstract class ExprVisitor {
 	}
 
 	visitLiteralExpr(LiteralExpr expr) {
+		return expr.accept(this);
+	}
+
+	visitLogicalExpr(LogicalExpr expr) {
 		return expr.accept(this);
 	}
 

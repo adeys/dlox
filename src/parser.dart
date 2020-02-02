@@ -42,7 +42,10 @@ class Parser {
 	}
 
 	Stmt _getStatement() {
+    	if (_match([TokenType.FOR])) return _getForStatement();
+    	if (_match([TokenType.IF])) return _getIfStatement();
 		if (_match([TokenType.PRINT])) return _getPrintStatement();
+		if (_match([TokenType.WHILE])) return _getWhileStatement();
 		if (_match([TokenType.LEFT_BRACE])) return new BlockStmt(_getBlockStatement());
 
 		return _getExprStatement();
@@ -53,6 +56,72 @@ class Parser {
 		_consume(TokenType.SEMICOLON, "Expect ';' after value.");
 
 		return new PrintStmt(expr);
+	}
+
+	Stmt _getForStatement() {
+		_consume(TokenType.LEFT_PAREN, "Expect '(' after 'for'.");
+
+		Stmt init;
+		if (_match([TokenType.SEMICOLON])) {
+			init = null;
+		} else if (_match([TokenType.VAR])) {
+			init = _getVarDeclaration();
+		} else {
+			init = _getExprStatement();
+		}
+		
+		Expr cond = null;
+		if (!_check(TokenType.SEMICOLON)) {
+			cond = _getExpression();
+		}
+		_consume(TokenType.SEMICOLON, "Expect ';' after loop condition.");
+		
+		Expr inc = null;
+		if (!_check(TokenType.RIGHT_PAREN)) {
+			inc = _getExpression();
+		}
+		_consume(TokenType.RIGHT_PAREN, "Expect ')' after for clauses.");
+		
+		Stmt body = _getStatement();
+		
+		if (inc != null) {
+			body = new BlockStmt([body, new ExpressionStmt(inc)]);
+		}
+
+		if (cond == null) cond = new LiteralExpr(true);
+
+		body = new WhileStmt(cond, body);
+
+		if (init != null) {
+			body = new BlockStmt([init, body]);	
+		}
+
+		return body;
+	}
+
+	IfStmt _getIfStatement() {
+		_consume(TokenType.LEFT_PAREN, "Expected '(' after 'if'.");
+		Expr condition = _getExpression();
+		
+		_consume(TokenType.RIGHT_PAREN, "Expected ')' after if condition.");
+		Stmt thenBranch = _getStatement();
+		Stmt elseBranch = null;
+		
+		if (_match([TokenType.ELSE])) {
+			elseBranch = _getStatement();
+		} 
+		
+		return new IfStmt(condition, thenBranch, elseBranch);
+	}
+
+	WhileStmt _getWhileStatement() {
+		_consume(TokenType.LEFT_PAREN, "Expect '(' after while.");
+		Expr condition = _getExpression();
+		
+		_consume(TokenType.RIGHT_PAREN, "Expect ')' after condition.");
+		Stmt body = _getStatement();
+		
+		return new WhileStmt(condition, body);
 	}
 
 	List<Stmt> _getBlockStatement() {
@@ -79,7 +148,7 @@ class Parser {
 	}
 
 	Expr _getAssignment() {
-		Expr expr = _getEquality();
+		Expr expr = _getOr();
 
 		if (_match([TokenType.EQUAL])) {
 			Token equals = _previous();
@@ -90,6 +159,32 @@ class Parser {
 			}
 
 			error(equals, "Invalid assignment target.");
+		}
+
+		return expr;
+	}
+
+	Expr _getOr() {
+		Expr expr = _getAnd();
+
+		while (_match([TokenType.OR])) {
+			Token op = _previous();
+			Expr right = _getAnd();
+
+			expr = new LogicalExpr(expr, op, right);
+		}
+
+		return expr;
+	}
+
+	Expr _getAnd() {
+		Expr expr = _getEquality();
+
+		while (_match([TokenType.AND])) {
+			Token op = _previous();
+			Expr right = _getEquality();
+
+			expr = new LogicalExpr(expr, op, right);
 		}
 
 		return expr;
