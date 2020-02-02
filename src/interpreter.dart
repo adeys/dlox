@@ -118,8 +118,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 	@override
 	Object visitLiteralExpr(LiteralExpr expr) {
-		// Adjustment to get identifier from env
-		return expr.value is Token ? _env.get(expr.value) : expr.value;
+		return expr.value;
 	}
 
 	@override
@@ -174,16 +173,16 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 		return null;
 	}
 
-  @override
-  void visitVarStmt(VarStmt expr) {
-	  	Object value = null;
+	@override
+	void visitVarStmt(VarStmt expr) {
+		Object value = null;
 
 		if (expr.initializer != null) {
 			value = _evaluate(expr.initializer);
 		}
 
-	  	_env.define(expr.name.lexeme, value);
-  }
+		_env.define(expr.name.lexeme, value);
+	}
 
 	@override
 	Object visitVariableExpr(VariableExpr expr) {

@@ -32,7 +32,7 @@ class Parser {
 	VarStmt _getVarDeclaration() {
 		Token id = _consume(TokenType.IDENTIFIER, "Expected variable name.");
 
-		LiteralExpr expr = null;
+		Expr expr = null;
 		if (_match([TokenType.EQUAL])) {
 			expr = _getExpression();
 		}
@@ -85,9 +85,8 @@ class Parser {
 			Token equals = _previous();
 
 			if (expr is VariableExpr) {
-				Token name = expr.name;
 				Expr value = _getAssignment();
-				return new AssignExpr(name, value);
+				return new AssignExpr(expr.name, value);
 			}
 
 			error(equals, "Invalid assignment target.");
@@ -164,7 +163,7 @@ class Parser {
 		}
 
 		if (_match([TokenType.IDENTIFIER])) {
-			return new LiteralExpr(_previous());
+			return new VariableExpr(_previous());
 		}
 
 		if (_match([TokenType.LEFT_PAREN])) {

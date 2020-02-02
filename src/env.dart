@@ -15,7 +15,7 @@ class Environment {
 
 	void assign(Token name, Object value) {
 		if (_store.containsKey(name.lexeme)) {
-			_store.update(name.lexeme, value);
+			_store[name.lexeme] =  value;
 			return;
 		}
 
