@@ -4,6 +4,21 @@ abstract class Expr {
     accept(ExprVisitor visitor);
 }
 
+class AssignExpr extends Expr {
+	Token name;
+	Expr value;
+
+	AssignExpr(Token name, Expr value) {
+		this.name = name;
+		this.value = value;
+	}
+
+	accept(ExprVisitor visitor) {
+		return visitor.visitAssignExpr(this);
+	}
+}
+
+
 class BinaryExpr extends Expr {
 	Expr left;
 	Token op;
@@ -76,6 +91,10 @@ class VariableExpr extends Expr {
 
 
 abstract class ExprVisitor {
+
+	visitAssignExpr(AssignExpr expr) {
+		return expr.accept(this);
+	}
 
 	visitBinaryExpr(BinaryExpr expr) {
 		return expr.accept(this);

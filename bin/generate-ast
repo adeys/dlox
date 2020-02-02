@@ -13,6 +13,7 @@ main(List<String> argv) {
 
 		String base = 'Expr';
 		List<String> types = [
+			"Assign : Token name, Expr value",
 			"Binary : Expr left, Token op, Expr right",
 			"Grouping : Expr expr",
 			"Literal : Object value",
@@ -33,6 +34,7 @@ main(List<String> argv) {
 
 		base = 'Stmt';
 		types = [
+			"Block : List<Stmt> statements",
 			"Expression : Expr expression",
 			"Print : Expr expression",
 			"Var : Token name, Expr initializer"

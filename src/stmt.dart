@@ -5,6 +5,19 @@ abstract class Stmt {
     accept(StmtVisitor visitor);
 }
 
+class BlockStmt extends Stmt {
+	List<Stmt> statements;
+
+	BlockStmt(List<Stmt> statements) {
+		this.statements = statements;
+	}
+
+	accept(StmtVisitor visitor) {
+		return visitor.visitBlockStmt(this);
+	}
+}
+
+
 class ExpressionStmt extends Stmt {
 	Expr expression;
 
@@ -47,6 +60,10 @@ class VarStmt extends Stmt {
 
 
 abstract class StmtVisitor {
+
+	visitBlockStmt(BlockStmt expr) {
+		return expr.accept(this);
+	}
 
 	visitExpressionStmt(ExpressionStmt expr) {
 		return expr.accept(this);

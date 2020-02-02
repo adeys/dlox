@@ -43,6 +43,7 @@ class Parser {
 
 	Stmt _getStatement() {
 		if (_match([TokenType.PRINT])) return _getPrintStatement();
+		if (_match([TokenType.LEFT_BRACE])) return new BlockStmt(_getBlockStatement());
 
 		return _getExprStatement();
 	}
@@ -54,6 +55,18 @@ class Parser {
 		return new PrintStmt(expr);
 	}
 
+	List<Stmt> _getBlockStatement() {
+		List<Stmt> list = [];
+
+		while (!_check(TokenType.RIGHT_BRACE) && !eof()) {
+			list.add(_getDeclaration());
+		}
+
+		_consume(TokenType.RIGHT_BRACE, "Expect '}' after block.");
+
+		return list;
+	}
+
 	ExpressionStmt _getExprStatement() {
 		Expr expr = _getExpression();
 		_consume(TokenType.SEMICOLON, "Expect ';' after expression.");
@@ -62,7 +75,25 @@ class Parser {
 	}
 
 	Expr _getExpression() {
-		return _getEquality();
+		return _getAssignment();
+	}
+
+	Expr _getAssignment() {
+		Expr expr = _getEquality();
+
+		if (_match([TokenType.EQUAL])) {
+			Token equals = _previous();
+
+			if (expr is VariableExpr) {
+				Token name = expr.name;
+				Expr value = _getAssignment();
+				return new AssignExpr(name, value);
+			}
+
+			error(equals, "Invalid assignment target.");
+		}
+
+		return expr;
 	}
 
 	Expr _getEquality() {

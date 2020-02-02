@@ -23,6 +23,7 @@ class Lexer {
 		"else": TokenType.ELSE,
 		"return": TokenType.RETURN,
 		"print": TokenType.PRINT,
+    "var": TokenType.VAR
 	};
 
 	Lexer(this.source);

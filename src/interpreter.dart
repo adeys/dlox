@@ -1,10 +1,13 @@
 import './expr.dart';
 import './tokens.dart';
 import './error.dart';
+import 'env.dart';
 import 'lox.dart';
 import 'stmt.dart';
 
 class Interpreter implements ExprVisitor, StmtVisitor {
+
+	Environment _env = new Environment(null);
 
 	void interpret(List<Stmt> statements) {
 		try {
@@ -36,6 +39,19 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 		} 
 		
 		return object.toString();
+	}
+
+	void _executeBlock(List<Stmt> statements, Environment env) {
+		Environment prev = _env;
+
+		try {
+			_env = env;
+			for (Stmt stmt in statements) {
+				_execute(stmt);
+			}
+		} finally {
+			_env = prev;
+		}
 	}
 
 	@override
@@ -102,7 +118,8 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 	@override
 	Object visitLiteralExpr(LiteralExpr expr) {
-		return expr.value;
+		// Adjustment to get identifier from env
+		return expr.value is Token ? _env.get(expr.value) : expr.value;
 	}
 
 	@override
@@ -158,14 +175,33 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 	}
 
   @override
-  visitVarStmt(VarStmt expr) {
-    // TODO: implement visitVarStmt
-    return null;
+  void visitVarStmt(VarStmt expr) {
+	  	Object value = null;
+
+		if (expr.initializer != null) {
+			value = _evaluate(expr.initializer);
+		}
+
+	  	_env.define(expr.name.lexeme, value);
   }
 
-  @override
-  visitVariableExpr(VariableExpr expr) {
-    // TODO: implement visitVariableExpr
-    return null;
-  }
+	@override
+	Object visitVariableExpr(VariableExpr expr) {
+		return _env.get(expr.name);
+	}
+
+	@override
+	Object visitAssignExpr(AssignExpr expr) {
+		Object value = _evaluate(expr.value);
+
+		_env.assign(expr.name, value);
+		return value;
+	}
+
+	@override
+	void visitBlockStmt(BlockStmt expr) {
+		_executeBlock(expr.statements, new Environment(_env));
+
+		return null;
+	}
 }
