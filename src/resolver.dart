@@ -8,13 +8,21 @@ import 'tokens.dart';
 
 enum FunctionType {
 	NONE,
-	FUNCTION
+	FUNCTION,
+	INITIALIZER,
+	METHOD
+}
+
+enum ClassType {
+	NONE,
+	CLASS
 }
 
 class Resolver implements ExprVisitor, StmtVisitor {
 	final Interpreter _interpreter;
 	ListQueue<HashMap<String, bool>> _scopes = new ListQueue();
-	FunctionType _currentFunc = FunctionType.NONE; 
+	FunctionType _currentFunc = FunctionType.NONE;
+	ClassType _currentClass = ClassType.NONE;
 
 	Resolver(Interpreter interpreter): _interpreter = interpreter;
 
@@ -165,6 +173,9 @@ class Resolver implements ExprVisitor, StmtVisitor {
 		}
 
 		if (stmt.value != null) {
+			if (_currentFunc == FunctionType.INITIALIZER) {
+				Lox.error(stmt.keyword.line, 'Cannot return a value from class constructor.');
+			}
 			_resolve(stmt.value);	
 		}
 
@@ -200,6 +211,53 @@ class Resolver implements ExprVisitor, StmtVisitor {
 		_resolve(stmt.condition);
 		_resolve(stmt.body);
 
+		return null;
+	}
+
+	@override
+	visitClassStmt(ClassStmt stmt) {
+		ClassType enclosing = _currentClass;
+		_currentClass = ClassType.CLASS;
+
+		_declare(stmt.name);
+		_define(stmt.name);
+
+		_beginScope();
+		_scopes.first['this'] = true;
+
+		for (FunctionStmt method in stmt.methods) {
+			FunctionType decl = FunctionType.METHOD;
+			if (method.name.lexeme ==  'construct') decl = FunctionType.INITIALIZER;
+			_resolveFunction(method, decl);
+		}
+
+		_endScope();
+		
+		_currentClass = enclosing;
+		return null;
+	}
+
+	@override
+	visitGetExpr(GetExpr expr) {
+		_resolve(expr.object);
+		return null;
+	}
+
+	@override
+	visitSetExpr(SetExpr expr) {
+		_resolve(expr.value);
+		_resolve(expr.object);
+		return null;
+	}
+
+	@override
+	visitThisExpr(ThisExpr expr) {
+		if (_currentClass == ClassType.NONE) {
+			Lox.error(expr.keyword.line, "Cannot use 'this' outside of a class.");
+			return null;
+		}
+
+		_resolveLocal(expr, expr.keyword);
 		return null;
 	}
 }

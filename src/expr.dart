@@ -53,6 +53,21 @@ class CallExpr extends Expr {
 }
 
 
+class GetExpr extends Expr {
+	Expr object;
+	Token name;
+
+	GetExpr(Expr object, Token name) {
+		this.object = object;
+		this.name = name;
+	}
+
+	accept(ExprVisitor visitor) {
+		return visitor.visitGetExpr(this);
+	}
+}
+
+
 class GroupingExpr extends Expr {
 	Expr expr;
 
@@ -92,6 +107,36 @@ class LogicalExpr extends Expr {
 
 	accept(ExprVisitor visitor) {
 		return visitor.visitLogicalExpr(this);
+	}
+}
+
+
+class SetExpr extends Expr {
+	Expr object;
+	Token name;
+	Expr value;
+
+	SetExpr(Expr object, Token name, Expr value) {
+		this.object = object;
+		this.name = name;
+		this.value = value;
+	}
+
+	accept(ExprVisitor visitor) {
+		return visitor.visitSetExpr(this);
+	}
+}
+
+
+class ThisExpr extends Expr {
+	Token keyword;
+
+	ThisExpr(Token keyword) {
+		this.keyword = keyword;
+	}
+
+	accept(ExprVisitor visitor) {
+		return visitor.visitThisExpr(this);
 	}
 }
 
@@ -138,6 +183,10 @@ abstract class ExprVisitor {
 		return expr.accept(this);
 	}
 
+	visitGetExpr(GetExpr expr) {
+		return expr.accept(this);
+	}
+
 	visitGroupingExpr(GroupingExpr expr) {
 		return expr.accept(this);
 	}
@@ -147,6 +196,14 @@ abstract class ExprVisitor {
 	}
 
 	visitLogicalExpr(LogicalExpr expr) {
+		return expr.accept(this);
+	}
+
+	visitSetExpr(SetExpr expr) {
+		return expr.accept(this);
+	}
+
+	visitThisExpr(ThisExpr expr) {
 		return expr.accept(this);
 	}
 

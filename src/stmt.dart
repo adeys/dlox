@@ -18,6 +18,21 @@ class BlockStmt extends Stmt {
 }
 
 
+class ClassStmt extends Stmt {
+	Token name;
+	List<FunctionStmt> methods;
+
+	ClassStmt(Token name, List<FunctionStmt> methods) {
+		this.name = name;
+		this.methods = methods;
+	}
+
+	accept(StmtVisitor visitor) {
+		return visitor.visitClassStmt(this);
+	}
+}
+
+
 class ExpressionStmt extends Stmt {
 	Expr expression;
 
@@ -126,6 +141,10 @@ class WhileStmt extends Stmt {
 abstract class StmtVisitor {
 
 	visitBlockStmt(BlockStmt expr) {
+		return expr.accept(this);
+	}
+
+	visitClassStmt(ClassStmt expr) {
 		return expr.accept(this);
 	}
 

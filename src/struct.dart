@@ -1,7 +1,10 @@
+import 'dart:collection';
+
 import 'env.dart';
 import 'error.dart';
 import 'interpreter.dart';
 import 'stmt.dart';
+import 'tokens.dart';
 
 abstract class LoxCallable {
 
@@ -34,8 +37,10 @@ class NativeFunction implements LoxCallable {
 class LoxFunction implements LoxCallable {
 	final FunctionStmt _stmt;
 	final Environment _closure;
+	final bool _isInit;
 
-	LoxFunction(FunctionStmt stmt, Environment env): _stmt = stmt, _closure = env {
+	LoxFunction(FunctionStmt stmt, Environment env, bool isInit): 
+		_stmt = stmt, _closure = env, _isInit = isInit {
 		
 	}
 	
@@ -55,7 +60,35 @@ class LoxFunction implements LoxCallable {
 		try {
 			interpreter.executeBlock(_stmt.body, env);
 		} on Return catch (ret) {
+			if (_isInit) return _closure.getAt(0, 'this');
 			return ret.value;
+		}
+
+		if (_isInit) return _closure.getAt(0, 'this');
+		return null;
+	}
+
+	LoxFunction bind(LoxInstance instance) {
+		Environment env = new Environment(_closure);
+		env.define('this', instance);
+		return new LoxFunction(_stmt, env, _isInit);
+	}
+
+	@override
+	String toString() {
+		return '<fn ${_stmt.name.lexeme}>';
+	}
+}
+
+class LoxClass implements LoxCallable {
+	final String _name;
+	Map<String, LoxFunction> _methods = new HashMap();
+
+	LoxClass(String name, Map<String, LoxFunction> methods): _name = name, _methods = methods;
+
+	LoxFunction findMethod(String name) {
+		if (_methods.containsKey(name)) {
+			return _methods[name];
 		}
 
 		return null;
@@ -63,6 +96,51 @@ class LoxFunction implements LoxCallable {
 
 	@override
 	String toString() {
-		return '<fn ${_stmt.name.lexeme}>';
+		return '<class $_name>';
+	}
+
+	@override
+	int arity() {
+		LoxFunction init = findMethod('construct');
+		if (init == null) return 0;
+		return init.arity();
+	}
+
+	@override
+	Object call(Interpreter interpreter, List<Object> args) {
+		LoxInstance instance = new LoxInstance(this);
+		LoxFunction init = findMethod('construct');
+		if (init != null) {
+			init.bind(instance).call(interpreter, args);
+		}
+
+		return instance;
+	}
+}
+
+class LoxInstance {
+	LoxClass _class;
+	final Map<String, Object> _fields = new HashMap();
+
+	LoxInstance(LoxClass klass): _class = klass;
+
+	Object get(Token field) {
+		if (_fields.containsKey(field.lexeme)) {
+			return _fields[field.lexeme];
+		}
+
+		LoxFunction method = _class.findMethod(field.lexeme);
+		if (method != null) return method.bind(this);
+
+		throw new RuntimeError(field, "Undefined property '${field.lexeme}'.");
+	}
+
+	void set(Token name, Object value) {
+		_fields[name.lexeme] = value;
+	}
+
+	@override
+	String toString() {
+		return '$_class instance';
 	}
 }

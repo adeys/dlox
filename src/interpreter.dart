@@ -1,8 +1,8 @@
 import 'dart:collection';
 
-import './expr.dart';
-import './tokens.dart';
-import './error.dart';
+import 'expr.dart';
+import 'tokens.dart';
+import 'error.dart';
 import 'env.dart';
 import 'lox.dart';
 import 'stmt.dart';
@@ -285,8 +285,8 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 	}
 
 	@override
-	visitFunctionStmt(FunctionStmt stmt) {
-		LoxFunction func = new LoxFunction(stmt, _env);
+	void visitFunctionStmt(FunctionStmt stmt) {
+		LoxFunction func = new LoxFunction(stmt, _env, false);
 		_env.define(stmt.name.lexeme, func);
 		return null;
 	}
@@ -297,5 +297,50 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 		if (expr.value != null) value = _evaluate(expr.value);
 
 		throw new Return(value);
+	}
+
+	@override
+	void visitClassStmt(ClassStmt stmt) {
+		_env.define(stmt.name.lexeme, null);
+
+		Map<String, LoxFunction> methods = new HashMap();
+		for (FunctionStmt method in stmt.methods) {
+			LoxFunction func = new LoxFunction(method, _env, method.name.lexeme == 'construct');
+			methods[method.name.lexeme] = func;
+		}
+
+		LoxClass klass = new LoxClass(stmt.name.lexeme, methods);
+		_env.assign(stmt.name, klass);
+
+		return null;
+	}
+
+	@override
+	Object visitGetExpr(GetExpr expr) {
+		Object obj = _evaluate(expr.object);
+		if (obj is LoxInstance) {
+			return obj.get(expr.name);
+		}
+		
+		throw new RuntimeError(expr.name, "Only instances have properties.");
+	}
+
+	@override
+	void visitSetExpr(SetExpr expr) {
+		Object obj = _evaluate(expr.object);
+
+		if(!(obj is LoxInstance)) {
+			throw new RuntimeError(expr.name, "Only instances have fields");
+		}
+
+		Object value = _evaluate(expr.value);
+		(obj as LoxInstance).set(expr.name, value);
+
+		return null;
+	}
+
+	@override
+	visitThisExpr(ThisExpr expr) {
+		return _lookupVariable(expr.keyword, expr);
 	}
 }

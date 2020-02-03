@@ -20,6 +20,7 @@ class Parser {
 
 	Stmt _getDeclaration() {
 		try {
+			if (_match([TokenType.CLASS])) return _getClassDeclaration();
 			if (_match([TokenType.FUN])) return _getFuncDeclaration('function');
 			if (_match([TokenType.VAR])) return _getVarDeclaration();
 
@@ -28,6 +29,19 @@ class Parser {
 			_synchronize();
 			return null;
 		}
+	}
+
+	ClassStmt _getClassDeclaration() {
+		Token name = _consume(TokenType.IDENTIFIER, "Expect class name.");
+		_consume(TokenType.LEFT_BRACE, "Expect '{' before class body.");
+		
+		List<FunctionStmt> methods = [];
+		while (!_check(TokenType.RIGHT_BRACE) && !eof()) {
+			methods.add(_getFuncDeclaration("method"));
+		} 
+		
+		_consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.");
+		return new ClassStmt(name, methods);
 	}
 
 	FunctionStmt _getFuncDeclaration(String type) {
@@ -190,9 +204,11 @@ class Parser {
 		if (_match([TokenType.EQUAL])) {
 			Token equals = _previous();
 
+			Expr value = _getAssignment();
 			if (expr is VariableExpr) {
-				Expr value = _getAssignment();
 				return new AssignExpr(expr.name, value);
+			} else if (expr is GetExpr) {
+				return new SetExpr(expr.object, expr.name, value);
 			}
 
 			error(equals, "Invalid assignment target.");
@@ -291,6 +307,9 @@ class Parser {
 		while (true) {
 			if (_match([TokenType.LEFT_PAREN])) {
 				expr = _finishCall(expr);
+			} else if (_match([TokenType.DOT])) {
+				Token name = _consume(TokenType.IDENTIFIER, "Expect name property after '.'.");
+				expr = new GetExpr(expr, name);
 			} else {
 				break;
 			}
@@ -322,6 +341,8 @@ class Parser {
 		if (_match([TokenType.NUMBER, TokenType.STRING])) {
 			return new LiteralExpr(_previous().literal);
 		}
+
+		if (_match([TokenType.THIS])) return new ThisExpr(_previous());
 
 		if (_match([TokenType.IDENTIFIER])) {
 			return new VariableExpr(_previous());
