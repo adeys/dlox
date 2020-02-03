@@ -27,6 +27,10 @@ class Environment {
 		throw new RuntimeError(name, "Undefined variable '${name.lexeme}'.");
 	}
 
+	void assignAt(int dist, Token name, Object value) {
+		_ancestor(dist)._store[name.lexeme] = value;
+	}
+
 	Object get(Token name) {
 		if (_store.containsKey(name.lexeme)) {
 			return _store[name.lexeme];
@@ -35,5 +39,18 @@ class Environment {
 		if (_parent != null) return _parent.get(name);
 
 		throw new RuntimeError(name, "Undefined variable '${name.lexeme}'.");
+	}
+
+	Object getAt(int dist, String name) {
+		return _ancestor(dist)._store[name];
+	}
+
+	Environment _ancestor(int depth) {
+		Environment env = this;
+		for (int i = 0; i < depth; i++) {
+			env = env._parent;
+		}
+
+		return env;
 	}
 }

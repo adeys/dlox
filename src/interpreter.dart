@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import './expr.dart';
 import './tokens.dart';
 import './error.dart';
@@ -9,6 +11,7 @@ import 'struct.dart';
 class Interpreter implements ExprVisitor, StmtVisitor {
 	final Environment globals = new Environment(null);
 	Environment _env;
+	final Map<Expr, int> _locals = new HashMap<Expr, int>();
 
 	Interpreter() {
 		globals.define('clock', new NativeFunction((Interpreter interpreter, List<Object> args) {
@@ -26,6 +29,10 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 		} on RuntimeError catch (e) {
 			Lox.runtimeError(e);
 		}
+	}
+
+	void resolve(Expr expr, int depth) {
+		_locals[expr] = depth;
 	}
 
 	void _execute(Stmt stmt) {
@@ -195,14 +202,28 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 	@override
 	Object visitVariableExpr(VariableExpr expr) {
-		return _env.get(expr.name);
+		return _lookupVariable(expr.name, expr);
+	}
+
+	Object _lookupVariable(Token name, Expr expr) {
+		int dist = _locals[expr];
+		if (dist != null) {
+			return _env.getAt(dist, name.lexeme);
+		} else {
+			return _env.get(name);
+		}
 	}
 
 	@override
 	Object visitAssignExpr(AssignExpr expr) {
 		Object value = _evaluate(expr.value);
 
-		_env.assign(expr.name, value);
+		int dist = _locals[expr];
+		if (dist != null) {
+			_env.assignAt(dist, expr.name, value);
+		} else {
+			globals.assign(expr.name, value);
+		}
 		return value;
 	}
 

@@ -4,11 +4,12 @@ import 'error.dart';
 import 'interpreter.dart';
 import 'lexer.dart';
 import 'parser.dart';
+import 'resolver.dart';
 import 'stmt.dart';
 import 'tokens.dart';
 
 class Lox {
-	static bool errored = false;
+	static bool hadError = false;
 	static bool hadRuntimeError = false;
 
 	static Interpreter _interpreter = new Interpreter();
@@ -20,7 +21,7 @@ class Lox {
 		while (true) {
 			stdout.write('dlox> ');
 			run(stdin.readLineSync());
-			errored = false;
+			hadError = false;
 		}
 	} 
 
@@ -28,7 +29,8 @@ class Lox {
 		File program = new File(file);
 		run(program.readAsStringSync());
 
-		if (errored) exit(65);
+		if (hadError) exit(65);
+		if (hadRuntimeError) exit(70);
 	}
 
 	void run(String program) {
@@ -38,8 +40,12 @@ class Lox {
 		Parser parser = new Parser(tokens);
 		List<Stmt> stmts = parser.parse();
 
-		if (errored) exit(65);
-		if (hadRuntimeError) exit(70);
+		if (hadError) return;
+
+		Resolver resolver = new Resolver(_interpreter);
+		resolver.resolve(stmts);
+
+		if (hadError) return;
 
 		_interpreter.interpret(stmts);
 	}
@@ -63,6 +69,6 @@ class Lox {
 
 	static void _report(int line, String where, String message) {
 		stderr.writeln('[line $line]: Error $where: $message');
-		errored = true;
+		hadError = true;
 	}
 }
