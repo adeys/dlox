@@ -21,6 +21,7 @@ main(List<String> argv) {
 			"Literal : Object value",
 			"Logical : Expr left, Token opt, Expr right",
 			"Set : Expr object, Token name, Expr value",
+			"Super : Token keyword, Token method",
 			"This : Token keyword",
 			"Unary : Token op, Expr right",
 			"Variable : Token name"
@@ -40,7 +41,7 @@ main(List<String> argv) {
 		base = 'Stmt';
 		types = [
 			"Block : List<Stmt> statements",
-			"Class : Token name, List<FunctionStmt> methods",
+			"Class : Token name, VariableExpr superclass, List<FunctionStmt> methods",
 			"Expression : Expr expression",
 			"Function : Token name, List<Token> params, List<Stmt> body",
 			"If : Expr condition, Stmt thenStmt, Stmt elseStmt",

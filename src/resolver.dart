@@ -15,7 +15,8 @@ enum FunctionType {
 
 enum ClassType {
 	NONE,
-	CLASS
+	CLASS,
+	SUBCLASS
 }
 
 class Resolver implements ExprVisitor, StmtVisitor {
@@ -222,6 +223,20 @@ class Resolver implements ExprVisitor, StmtVisitor {
 		_declare(stmt.name);
 		_define(stmt.name);
 
+		if (stmt.superclass != null && stmt.name.lexeme == stmt.superclass.name.lexeme) {
+			Lox.error(stmt.superclass.name.line, "A class cannot inherit from itself.");
+		}
+
+		if (stmt.superclass != null) {
+			_currentClass = ClassType.SUBCLASS;
+			_resolve(stmt.superclass);
+		}
+
+		if (stmt.superclass != null) {
+			_beginScope();
+			_scopes.first['super'] = true;
+		}
+
 		_beginScope();
 		_scopes.first['this'] = true;
 
@@ -233,6 +248,10 @@ class Resolver implements ExprVisitor, StmtVisitor {
 
 		_endScope();
 		
+		if (stmt.superclass != null) {
+			_endScope();
+		}
+
 		_currentClass = enclosing;
 		return null;
 	}
@@ -255,6 +274,18 @@ class Resolver implements ExprVisitor, StmtVisitor {
 		if (_currentClass == ClassType.NONE) {
 			Lox.error(expr.keyword.line, "Cannot use 'this' outside of a class.");
 			return null;
+		}
+
+		_resolveLocal(expr, expr.keyword);
+		return null;
+	}
+
+	@override
+	visitSuperExpr(SuperExpr expr) {
+		if (_currentClass == ClassType.NONE) {
+			Lox.error(expr.keyword.line, "Cannot use 'super' outside of a class.");
+		} else if (_currentClass != ClassType.SUBCLASS) {
+			Lox.error(expr.keyword.line, "Cannot use 'super' in a class with no superclass.");
 		}
 
 		_resolveLocal(expr, expr.keyword);

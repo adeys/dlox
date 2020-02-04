@@ -128,6 +128,21 @@ class SetExpr extends Expr {
 }
 
 
+class SuperExpr extends Expr {
+	Token keyword;
+	Token method;
+
+	SuperExpr(Token keyword, Token method) {
+		this.keyword = keyword;
+		this.method = method;
+	}
+
+	accept(ExprVisitor visitor) {
+		return visitor.visitSuperExpr(this);
+	}
+}
+
+
 class ThisExpr extends Expr {
 	Token keyword;
 
@@ -200,6 +215,10 @@ abstract class ExprVisitor {
 	}
 
 	visitSetExpr(SetExpr expr) {
+		return expr.accept(this);
+	}
+
+	visitSuperExpr(SuperExpr expr) {
 		return expr.accept(this);
 	}
 

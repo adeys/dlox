@@ -3,10 +3,10 @@ import 'tokens.dart';
 
 class Environment {
 	Map<String, Object> _store = new Map<String, Object>();
-	Environment _parent = null;
+	Environment parent = null;
 
-	Environment(Environment parent) {
-		_parent = parent;
+	Environment(Environment _parent) {
+		parent = _parent;
 	}
 
 	void define(String name, Object value) {
@@ -19,8 +19,8 @@ class Environment {
 			return;
 		}
 
-		if (_parent != null) {
-			_parent.assign(name, value);
+		if (parent != null) {
+			parent.assign(name, value);
 			return;
 		}
 
@@ -36,7 +36,7 @@ class Environment {
 			return _store[name.lexeme];
 		}
 
-		if (_parent != null) return _parent.get(name);
+		if (parent != null) return parent.get(name);
 
 		throw new RuntimeError(name, "Undefined variable '${name.lexeme}'.");
 	}
@@ -48,7 +48,7 @@ class Environment {
 	Environment _ancestor(int depth) {
 		Environment env = this;
 		for (int i = 0; i < depth; i++) {
-			env = env._parent;
+			env = env.parent;
 		}
 
 		return env;

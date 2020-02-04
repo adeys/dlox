@@ -83,12 +83,18 @@ class LoxFunction implements LoxCallable {
 class LoxClass implements LoxCallable {
 	final String _name;
 	Map<String, LoxFunction> _methods = new HashMap();
+  final LoxClass _parent;
 
-	LoxClass(String name, Map<String, LoxFunction> methods): _name = name, _methods = methods;
+	LoxClass(String name, LoxClass parent, Map<String, LoxFunction> methods): 
+    _name = name, _parent = parent, _methods = methods;
 
 	LoxFunction findMethod(String name) {
 		if (_methods.containsKey(name)) {
 			return _methods[name];
+		}
+
+		if (_parent != null) {
+			return _parent.findMethod(name);
 		}
 
 		return null;

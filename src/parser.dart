@@ -33,6 +33,13 @@ class Parser {
 
 	ClassStmt _getClassDeclaration() {
 		Token name = _consume(TokenType.IDENTIFIER, "Expect class name.");
+
+		VariableExpr superclass = null;
+		if (_match([TokenType.LESS])) {
+			_consume(TokenType.IDENTIFIER, "Expect superclass name.");
+			superclass = new VariableExpr(_previous());
+		}
+
 		_consume(TokenType.LEFT_BRACE, "Expect '{' before class body.");
 		
 		List<FunctionStmt> methods = [];
@@ -41,7 +48,7 @@ class Parser {
 		} 
 		
 		_consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.");
-		return new ClassStmt(name, methods);
+		return new ClassStmt(name, superclass, methods);
 	}
 
 	FunctionStmt _getFuncDeclaration(String type) {
@@ -353,6 +360,13 @@ class Parser {
 			_consume(TokenType.RIGHT_BRACE, 'Expected ")" after expression');
 
 			return new GroupingExpr(expr);
+		}
+
+		if (_match([TokenType.SUPER])) {
+			Token keyword = _previous();
+			_consume(TokenType.DOT, "Expect '.' after 'super'.");
+			Token method = _consume(TokenType.IDENTIFIER, "Expect superclass method name.");
+			return new SuperExpr(keyword, method);
 		}
 
 		throw error(_peek(), 'Expected expression.');

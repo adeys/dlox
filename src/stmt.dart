@@ -20,10 +20,12 @@ class BlockStmt extends Stmt {
 
 class ClassStmt extends Stmt {
 	Token name;
+	VariableExpr superclass;
 	List<FunctionStmt> methods;
 
-	ClassStmt(Token name, List<FunctionStmt> methods) {
+	ClassStmt(Token name, VariableExpr superclass, List<FunctionStmt> methods) {
 		this.name = name;
+		this.superclass = superclass;
 		this.methods = methods;
 	}
 
