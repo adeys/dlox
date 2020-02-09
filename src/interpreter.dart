@@ -261,8 +261,12 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 	@override
 	void visitWhileStmt(WhileStmt expr) {
-		while(_isTruthy(_evaluate(expr.condition))) {
-			_execute(expr.body);
+		try {
+			while(_isTruthy(_evaluate(expr.condition))) {
+				_execute(expr.body);
+			}
+		} on Break {
+			return;
 		}
 
 		return null;
@@ -384,5 +388,10 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 		} else {
 			return _evaluate(expr.right);
 		}
+	}
+
+	@override
+	void visitBreakStmt(BreakStmt expr) {
+		throw new Break();
 	}
 }

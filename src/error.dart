@@ -17,3 +17,7 @@ class Return {
 
 	Return(Object val): value = val;
 }
+
+class Break {
+  
+}

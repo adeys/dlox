@@ -19,11 +19,17 @@ enum ClassType {
 	SUBCLASS
 }
 
+enum LoopType {
+	NONE,
+	LOOP
+}
+
 class Resolver implements ExprVisitor, StmtVisitor {
 	final Interpreter _interpreter;
 	ListQueue<HashMap<String, bool>> _scopes = new ListQueue();
 	FunctionType _currentFunc = FunctionType.NONE;
 	ClassType _currentClass = ClassType.NONE;
+	LoopType _currentLoop = LoopType.NONE;
 
 	Resolver(Interpreter interpreter): _interpreter = interpreter;
 
@@ -209,9 +215,13 @@ class Resolver implements ExprVisitor, StmtVisitor {
 
 	@override
 	void visitWhileStmt(WhileStmt stmt) {
+		LoopType enclosing = _currentLoop;
+		_currentLoop = LoopType.LOOP;
+		
 		_resolve(stmt.condition);
 		_resolve(stmt.body);
 
+		_currentLoop = enclosing;
 		return null;
 	}
 
@@ -297,6 +307,15 @@ class Resolver implements ExprVisitor, StmtVisitor {
 		_resolve(expr.condition);
 		_resolve(expr.left);
 		_resolve(expr.right);
+		return null;
+	}
+
+	@override
+	visitBreakStmt(BreakStmt stmt) {
+		if (_currentLoop != LoopType.LOOP) {
+			Lox.error(stmt.keyword.line, "Cannot break outside from a loop context.");
+		}
+
 		return null;
 	}
 }

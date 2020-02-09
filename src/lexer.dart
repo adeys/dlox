@@ -19,12 +19,13 @@ class Lexer {
 		"nil": TokenType.NIL,
 		"for": TokenType.FOR,
 		"while": TokenType.WHILE,
+		"break": TokenType.BREAK,
 		"if": TokenType.IF,
 		"else": TokenType.ELSE,
 		"return": TokenType.RETURN,
 		"print": TokenType.PRINT,
-    	"var": TokenType.VAR,
-    	"fun": TokenType.FUN
+		"var": TokenType.VAR,
+		"fun": TokenType.FUN
 	};
 
 	Lexer(this.source);

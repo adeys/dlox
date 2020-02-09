@@ -86,10 +86,11 @@ class Parser {
 	}
 
 	Stmt _getStatement() {
-    	if (_match([TokenType.FOR])) return _getForStatement();
-    	if (_match([TokenType.IF])) return _getIfStatement();
+		if (_match([TokenType.FOR])) return _getForStatement();
+		if (_match([TokenType.IF])) return _getIfStatement();
 		if (_match([TokenType.PRINT])) return _getPrintStatement();
 		if (_match([TokenType.RETURN])) return _getReturnStatement();
+		if (_match([TokenType.BREAK])) return _getBreakStatement();
 		if (_match([TokenType.WHILE])) return _getWhileStatement();
 		if (_match([TokenType.LEFT_BRACE])) return new BlockStmt(_getBlockStatement());
 
@@ -101,6 +102,12 @@ class Parser {
 		_consume(TokenType.SEMICOLON, "Expect ';' after value.");
 
 		return new PrintStmt(expr);
+	}
+
+	BreakStmt _getBreakStatement() {
+		Token keyword = _previous();
+		_consume(TokenType.SEMICOLON, "Expect ';' after 'break' statement.");
+		return new BreakStmt(keyword);
 	}
 
 	ReturnStmt _getReturnStatement() {

@@ -140,6 +140,19 @@ class WhileStmt extends Stmt {
 }
 
 
+class BreakStmt extends Stmt {
+	Token keyword;
+
+	BreakStmt(Token keyword) {
+		this.keyword = keyword;
+	}
+
+	accept(StmtVisitor visitor) {
+		return visitor.visitBreakStmt(this);
+	}
+}
+
+
 abstract class StmtVisitor {
 
 	visitBlockStmt(BlockStmt expr) {
@@ -175,6 +188,10 @@ abstract class StmtVisitor {
 	}
 
 	visitWhileStmt(WhileStmt expr) {
+		return expr.accept(this);
+	}
+
+	visitBreakStmt(BreakStmt expr) {
 		return expr.accept(this);
 	}
 
