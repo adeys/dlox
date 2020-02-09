@@ -357,7 +357,7 @@ class Parser {
 
 		if (_match([TokenType.LEFT_PAREN])) {
 			Expr expr = _getExpression();
-			_consume(TokenType.RIGHT_BRACE, 'Expected ")" after expression');
+			_consume(TokenType.RIGHT_PAREN, 'Expected ")" after expression');
 
 			return new GroupingExpr(expr);
 		}

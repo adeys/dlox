@@ -187,7 +187,7 @@ class Lexer {
 	}
 
 	bool _isAlpha(String char) {
-		return RegExp('[a-zA-Z]').hasMatch(char);
+		return RegExp('[a-zA-Z_]').hasMatch(char);
 	}
 
 	bool _isAlphaNumeric(String char) {
