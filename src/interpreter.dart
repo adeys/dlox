@@ -21,29 +21,32 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 		_env = globals;
 	}
 
-	void interpret(List<Stmt> statements) {
+	Object interpret(List<Stmt> statements) {
+		Object result;
 		try {
 			for (Stmt stmt in statements) {
-				_execute(stmt);
+				result = _execute(stmt);
 			}
 		} on RuntimeError catch (e) {
 			Lox.runtimeError(e);
 		}
+			
+		return result;
 	}
 
 	void resolve(Expr expr, int depth) {
 		_locals[expr] = depth;
 	}
 
-	void _execute(Stmt stmt) {
-		stmt.accept(this);
+	Object _execute(Stmt stmt) {
+		return stmt.accept(this);
 	}
 
 	Object _evaluate(Expr expr) {
 		return expr.accept(this);
 	}
 
-	String _stringify(Object object) {
+	String stringify(Object object) {
 		if (object == null) return "nil";
 		// Hack. Work around Java adding ".0" to integer-valued doubles.
 		if (object is double) {
@@ -107,9 +110,9 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 					return left + (right as double);
 				}
 				if (left is String) {
-					return left + (right is String ? right : _stringify(right));
+					return left + (right is String ? right : stringify(right));
 				} else if (right is String) {
-					return right + (left is String ? left : _stringify(left));
+					return right + (left is String ? left : stringify(left));
 				}
 				throw new RuntimeError(expr.op, "Operands must be two numbers or two strings.");
 			}
@@ -177,15 +180,14 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 	}
 
 	@override
-	void visitExpressionStmt(ExpressionStmt stmt) {
-		_evaluate(stmt.expression);
-		return null;
+	Object visitExpressionStmt(ExpressionStmt stmt) {
+		return _evaluate(stmt.expression);
 	}
 
 	@override
 	void visitPrintStmt(PrintStmt stmt) {
 		Object val = _evaluate(stmt.expression);
-		print(_stringify(val));
+		print(stringify(val));
 		return null;
 	}
 

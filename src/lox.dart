@@ -15,12 +15,15 @@ class Lox {
 	static Interpreter _interpreter = new Interpreter();
 	
 	void prompt() {
-		stdout.writeln('Dart Lox v1.0');
+		stdout.writeln('Dart Lox v1.1');
 		stdout.writeln('Hit Ctrl+C to quit\n');
 
 		while (true) {
 			stdout.write('dlox> ');
-			run(stdin.readLineSync());
+			var res = run(stdin.readLineSync());
+			res == null 
+				? null 
+				: stdout.writeln(_interpreter.stringify(res));
 			hadError = false;
 		}
 	} 
@@ -33,21 +36,21 @@ class Lox {
 		if (hadRuntimeError) exit(70);
 	}
 
-	void run(String program) {
+	Object run(String program) {
 		Lexer lexer = new Lexer(program);
 
 		List<Token> tokens = lexer.tokenize();
 		Parser parser = new Parser(tokens);
 		List<Stmt> stmts = parser.parse();
 
-		if (hadError) return;
+		if (hadError) return null;
 
 		Resolver resolver = new Resolver(_interpreter);
 		resolver.resolve(stmts);
 
-		if (hadError) return;
+		if (hadError) return null;
 
-		_interpreter.interpret(stmts);
+		return _interpreter.interpret(stmts);
 	}
 
 	static void error(int line, String message) {
