@@ -291,4 +291,12 @@ class Resolver implements ExprVisitor, StmtVisitor {
 		_resolveLocal(expr, expr.keyword);
 		return null;
 	}
+
+	@override
+	visitTernaryExpr(TernaryExpr expr) {
+		_resolve(expr.condition);
+		_resolve(expr.left);
+		_resolve(expr.right);
+		return null;
+	}
 }

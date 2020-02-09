@@ -1,5 +1,5 @@
-import './tokens.dart';
-import './expr.dart';
+import 'tokens.dart';
+import 'expr.dart';
 import 'lox.dart';
 import 'stmt.dart';
 
@@ -206,7 +206,7 @@ class Parser {
 	}
 
 	Expr _getAssignment() {
-		Expr expr = _getOr();
+		Expr expr = _getTernary();
 
 		if (_match([TokenType.EQUAL])) {
 			Token equals = _previous();
@@ -219,6 +219,22 @@ class Parser {
 			}
 
 			error(equals, "Invalid assignment target.");
+		}
+
+		return expr;
+	}
+
+	Expr _getTernary() {
+		Expr expr = _getOr();
+
+		if (_match([TokenType.QMARK])) {
+			Token op = _previous();
+
+			Expr left = _getExpression();
+			_consume(TokenType.COLON, "Expect ':' in ternary operator after expression.");
+			Expr right = _getExpression();
+			
+			expr = new TernaryExpr(op, expr, left, right);
 		}
 
 		return expr;

@@ -23,8 +23,8 @@ class Lexer {
 		"else": TokenType.ELSE,
 		"return": TokenType.RETURN,
 		"print": TokenType.PRINT,
-    "var": TokenType.VAR,
-    "fun": TokenType.FUN
+    	"var": TokenType.VAR,
+    	"fun": TokenType.FUN
 	};
 
 	Lexer(this.source);
@@ -63,6 +63,8 @@ class Lexer {
 					}
 					break;
 				}
+			case '?': addToken(TokenType.QMARK, null); break;
+			case ':': addToken(TokenType.COLON, null); break;
 			// One or two characters tokens
 			case '!': addToken(_match('=') ? TokenType.BANG_EQUAL : TokenType.BANG, null); break;
 			case '=': addToken(_match('=') ? TokenType.EQUAL_EQUAL : TokenType.EQUAL, null); break;

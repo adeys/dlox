@@ -19,6 +19,25 @@ class AssignExpr extends Expr {
 }
 
 
+class TernaryExpr extends Expr {
+	Token op;
+	Expr condition;
+	Expr left;
+	Expr right;
+
+	TernaryExpr(Token op, Expr condition, Expr left, Expr right) {
+		this.op = op;
+		this.condition = condition;
+		this.left = left;
+		this.right = right;
+	}
+
+	accept(ExprVisitor visitor) {
+		return visitor.visitTernaryExpr(this);
+	}
+}
+
+
 class BinaryExpr extends Expr {
 	Expr left;
 	Token op;
@@ -187,6 +206,10 @@ class VariableExpr extends Expr {
 abstract class ExprVisitor {
 
 	visitAssignExpr(AssignExpr expr) {
+		return expr.accept(this);
+	}
+
+	visitTernaryExpr(TernaryExpr expr) {
 		return expr.accept(this);
 	}
 

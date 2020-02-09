@@ -374,4 +374,13 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 		return method.bind(obj);
 	}
+
+	@override
+	Object visitTernaryExpr(TernaryExpr expr) {
+		if (_isTruthy(_evaluate(expr.condition))) {
+			return _evaluate(expr.left);
+		} else {
+			return _evaluate(expr.right);
+		}
+	}
 }

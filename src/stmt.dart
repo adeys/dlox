@@ -1,5 +1,5 @@
-import './tokens.dart';
-import './expr.dart';
+import 'tokens.dart';
+import 'expr.dart';
 
 abstract class Stmt {
     accept(StmtVisitor visitor);

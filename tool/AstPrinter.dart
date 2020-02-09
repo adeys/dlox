@@ -82,4 +82,10 @@ class AstPrinter implements ExprVisitor {
     // TODO: implement visitSuperExpr
     return null;
   }
+
+  @override
+  visitTernaryExpr(TernaryExpr expr) {
+    // TODO: implement visitTernaryExpr
+    return null;
+  }
 }
