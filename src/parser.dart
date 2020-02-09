@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'tokens.dart';
 import 'expr.dart';
 import 'lox.dart';
@@ -52,7 +54,14 @@ class Parser {
 	}
 
 	FunctionStmt _getFuncDeclaration(String type) {
-		Token name = _consume(TokenType.IDENTIFIER, "Expect ${type} name.");
+		Token name;
+		
+		if (type == 'lambda') {
+			var anon = '__anon_${Random().nextInt(256)}';
+			name = new Token(TokenType.STRING, anon, anon, _previous().line);
+		} else {
+			name = _consume(TokenType.IDENTIFIER, "Expect ${type} name.");
+		}
 
 		_consume(TokenType.LEFT_PAREN, "Expect '(' after $type name.");
 		List<Token> params = [];
@@ -390,6 +399,11 @@ class Parser {
 			_consume(TokenType.DOT, "Expect '.' after 'super'.");
 			Token method = _consume(TokenType.IDENTIFIER, "Expect superclass method name.");
 			return new SuperExpr(keyword, method);
+		}
+
+		if (_match([TokenType.FUN]) && _check(TokenType.LEFT_PAREN)) {
+			FunctionStmt func = _getFuncDeclaration('lambda');
+			return new LambdaExpr(func.name, func);
 		}
 
 		throw error(_peek(), 'Expected expression.');

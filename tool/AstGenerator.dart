@@ -15,7 +15,7 @@ class AstGenerator {
 
 	void defineExpr(StringBuffer buffer, String base, List<String> types) {
 		// Define imports
-		buffer.writeln("import './tokens.dart';");
+		buffer.writeln("import 'tokens.dart';");
 		buffer.writeln('');
 		
 		// Define base class

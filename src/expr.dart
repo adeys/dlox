@@ -1,4 +1,5 @@
-import './tokens.dart';
+import 'tokens.dart';
+import 'stmt.dart';
 
 abstract class Expr {
     accept(ExprVisitor visitor);
@@ -190,6 +191,21 @@ class UnaryExpr extends Expr {
 }
 
 
+class LambdaExpr extends Expr {
+	Token name;
+	FunctionStmt func;
+
+	LambdaExpr(Token name, FunctionStmt func) {
+		this.name = name;
+		this.func = func;
+	}
+
+	accept(ExprVisitor visitor) {
+		return visitor.visitLambdaExpr(this);
+	}
+}
+
+
 class VariableExpr extends Expr {
 	Token name;
 
@@ -250,6 +266,10 @@ abstract class ExprVisitor {
 	}
 
 	visitUnaryExpr(UnaryExpr expr) {
+		return expr.accept(this);
+	}
+
+	visitLambdaExpr(LambdaExpr expr) {
 		return expr.accept(this);
 	}
 

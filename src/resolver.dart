@@ -51,7 +51,7 @@ class Resolver implements ExprVisitor, StmtVisitor {
 		Map<String, bool> scope = _scopes.first;
 
 		if (scope.containsKey(token.lexeme)) {
-			Lox.error(token.line, "Variable with this name already declared in this scope.");
+			Lox.error(token.line, "Variable with this name ('${token.lexeme}') already declared in this scope.");
 		}
 
 		_scopes.first[token.lexeme] = false;
@@ -316,6 +316,13 @@ class Resolver implements ExprVisitor, StmtVisitor {
 			Lox.error(stmt.keyword.line, "Cannot break outside from a loop context.");
 		}
 
+		return null;
+	}
+
+	@override
+	visitLambdaExpr(LambdaExpr expr) {
+		_resolve(expr.func);
+		_resolveLocal(expr, expr.name);
 		return null;
 	}
 }

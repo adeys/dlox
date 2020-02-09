@@ -25,6 +25,7 @@ main(List<String> argv) {
 			"Super : Token keyword, Token method",
 			"This : Token keyword",
 			"Unary : Token op, Expr right",
+			"Lambda : Token name, FunctionStmt func",
 			"Variable : Token name"
 		];
 		StringBuffer buffer = new StringBuffer();

@@ -2,8 +2,9 @@ program → declaration* EOF ;
 
 declaration → classDecl | funDecl | varDecl | statement ;
 classDecl → "class" IDENTIFIER ("<" IDENTIFIER)? "{" function* "}" ;
-funDecl → "fun" function ;
+funDecl → "fun" ( function | lambda ) ;
 function → IDENTIFIER "(" parameters? ")" block ;
+lambda → "(" parameters? ")" block;
 parameters → IDENTIFIER ("," IDENTIFIER)* ; 
 varDecl → "var" IDENTIFIER ( "=" expression )? ";" ;
 
@@ -29,4 +30,4 @@ multiplication → unary ( ( "/" | "*" ) unary )* ;
 unary → ( "!" | "-" ) unary | call ;
 call → primary ("(" arguments? ")" | "." IDENTIFIER)* ;
 arguments → expression ("," expression)* ;
-primary → NUMBER | STRING | "false" | "true" | "nil" | "(" expression ")" | IDENTIFIER | "super" "." IDENTIFIER;
+primary → NUMBER | STRING | "false" | "true" | "nil" | "(" expression ")" | IDENTIFIER | "super" "." IDENTIFIER | lambda;

@@ -291,10 +291,10 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 	}
 
 	@override
-	void visitFunctionStmt(FunctionStmt stmt) {
+	Object visitFunctionStmt(FunctionStmt stmt) {
 		LoxFunction func = new LoxFunction(stmt, _env, false);
 		_env.define(stmt.name.lexeme, func);
-		return null;
+		return func;
 	}
 
 	@override
@@ -393,5 +393,10 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 	@override
 	void visitBreakStmt(BreakStmt expr) {
 		throw new Break();
+	}
+
+	@override
+	visitLambdaExpr(LambdaExpr expr) {
+		return _execute(expr.func);
 	}
 }
