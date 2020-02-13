@@ -102,7 +102,8 @@ class Resolver implements ExprVisitor, StmtVisitor {
 
 	@override
 	void visitBinaryExpr(BinaryExpr expr) {
-		return null;
+		_resolve(expr.left);
+		_resolve(expr.right);
 	}
 
 	@override
