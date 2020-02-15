@@ -1,1 +1,3 @@
-A lox interpreter implementation in Dart Lang
+Tiny lang based on Lox lang
+
+Dart implementation of Tiny lang

@@ -328,6 +328,12 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 			methods[method.name.lexeme] = func;
 		}
 
+		// Provide a default constructor to base class instance
+		if (stmt.superclass == null && !methods.containsKey('construct')) {
+			FunctionStmt functionStmt = new FunctionStmt(null, [], []);
+			methods['construct'] = new LoxFunction(functionStmt, _env, true);
+		}
+
 		LoxClass klass = new LoxClass(stmt.name.lexeme, superclass as LoxClass, methods);
 
 		if (superclass != null) _env = _env.parent;

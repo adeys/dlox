@@ -37,7 +37,7 @@ class Parser {
 		Token name = _consume(TokenType.IDENTIFIER, "Expect class name.");
 
 		VariableExpr superclass = null;
-		if (_match([TokenType.LESS])) {
+		if (_match([TokenType.COLON])) {
 			_consume(TokenType.IDENTIFIER, "Expect superclass name.");
 			superclass = new VariableExpr(_previous());
 		}
