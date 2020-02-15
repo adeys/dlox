@@ -39,9 +39,10 @@ class LoxFunction implements LoxCallable {
 	final Environment _closure;
 	final bool _isInit;
   final bool _isStatic;
+  final bool _isGetter;
 
-	LoxFunction(FunctionStmt stmt, Environment env, bool isInit, bool isStatic): 
-		_stmt = stmt, _closure = env, _isInit = isInit, _isStatic = isStatic {
+	LoxFunction(FunctionStmt stmt, Environment env, bool isInit, bool isStatic, bool isGetter): 
+		_stmt = stmt, _closure = env, _isInit = isInit, _isStatic = isStatic, _isGetter = isGetter {
 		
 	}
 	
@@ -72,7 +73,7 @@ class LoxFunction implements LoxCallable {
 	LoxFunction bind(LoxInstance instance) {
 		Environment env = new Environment(_closure);
 		env.define('this', instance);
-		return new LoxFunction(_stmt, env, _isInit, _isStatic);
+		return new LoxFunction(_stmt, env, _isInit, _isStatic, _isGetter);
 	}
 
 	@override
@@ -126,11 +127,15 @@ class LoxClass extends LoxInstance implements LoxCallable {
 		return instance;
 	}
 
-  Object get(Token field) {
-    Object val = super.get(field);
+  Object get(Token field, Interpreter interpreter) {
+    LoxFunction val = findMethod(field.lexeme);
 
     if (val is LoxFunction && !val._isStatic) {
       throw new RuntimeError(field, "Cannot call non-static method from class object.");
+    }
+
+    if (val != null && val._isGetter) {
+      return val.bind(this).callFn(interpreter, []);
     }
 
     return val;
@@ -147,7 +152,7 @@ class LoxInstance {
 
 	LoxInstance(LoxClass klass): _class = klass;
 
-	Object get(Token field) {
+	Object get(Token field, Interpreter interpreter) {
 		if (_fields.containsKey(field.lexeme)) {
 			return _fields[field.lexeme];
 		}

@@ -294,7 +294,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 	@override
 	Object visitFunctionStmt(FunctionStmt stmt) {
-		LoxFunction func = new LoxFunction(stmt, _env, false, false);
+		LoxFunction func = new LoxFunction(stmt, _env, false, false, false);
 		_env.define(stmt.name.lexeme, func);
 		return func;
 	}
@@ -326,14 +326,14 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 		Map<String, LoxFunction> methods = new HashMap();
 		for (FunctionStmt method in stmt.methods) {
-			LoxFunction func = new LoxFunction(method, _env, method.name.lexeme == 'construct', method.isStatic);
+			LoxFunction func = new LoxFunction(method, _env, method.name.lexeme == 'construct', method.isStatic, method.isGetter);
 			methods[method.name.lexeme] = func;
 		}
 
 		// Provide a default constructor to base class instance
 		if (stmt.superclass == null && !methods.containsKey('construct')) {
-			FunctionStmt functionStmt = new FunctionStmt(null, [], [], false);
-			methods['construct'] = new LoxFunction(functionStmt, _env, true, false);
+			FunctionStmt functionStmt = new FunctionStmt(null, [], [], false, false);
+			methods['construct'] = new LoxFunction(functionStmt, _env, true, false, false);
 		}
 
 		LoxClass klass = new LoxClass(stmt.name.lexeme, superclass as LoxClass, methods);
@@ -349,7 +349,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 	Object visitGetExpr(GetExpr expr) {
 		Object obj = evaluate(expr.object);
 		if (obj is LoxInstance) {
-			return obj.get(expr.name);
+			return obj.get(expr.name, this);
 		}
 		
 		throw new RuntimeError(expr.name, "Only instances have properties.");
@@ -409,15 +409,14 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 	}
 
   @override
-  void visitImportStmt(ImportStmt stmt) {
+  void visitImportStmt(ImportStmt stmt) async {
     String target = stmt.target.value;
-    _parent.runFile(target);
+    await _parent.runFile(target);
     return null;
   }
 
   @override
   visitThrowStmt(ThrowStmt stmt) {
     throw new RuntimeError(stmt.keyword, evaluate(stmt.message));
-    return null;
   }
 }

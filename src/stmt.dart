@@ -53,8 +53,10 @@ class FunctionStmt extends Stmt {
 	List<Token> params;
 	List<Stmt> body;
   bool isStatic = false;
+  bool isGetter = false;
 
-	FunctionStmt(Token name, List<Token> params, List<Stmt> body, bool _static): isStatic = _static {
+	FunctionStmt(Token name, List<Token> params, List<Stmt> body, bool _static, bool _getter): 
+    isStatic = _static, isGetter = _getter {
 		this.name = name;
 		this.params = params;
 		this.body = body;

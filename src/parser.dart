@@ -56,8 +56,10 @@ class Parser {
 	FunctionStmt _getFuncDeclaration(String type) {
 		Token name;
     bool _static = false;
+    bool isMethod = type == 'method';
+    bool isGetter = false;
 
-    if (type == 'method' && _match([TokenType.STATIC])) {
+    if (isMethod && _match([TokenType.STATIC])) {
       _static = true;
     }
 		
@@ -68,23 +70,31 @@ class Parser {
 			name = _consume(TokenType.IDENTIFIER, "Expect ${type} name.");
 		}
 
-		_consume(TokenType.LEFT_PAREN, "Expect '(' after $type name.");
-		List<Token> params = [];
-		if (!_check(TokenType.RIGHT_PAREN)) {
-			do {
-				if (params.length >= 255) {
-					error(_peek(), "Cannot have more than 255 parameters.");
-				} 
-				params.add(_consume(TokenType.IDENTIFIER, "Expect parameter name."));
-			} while (_match([TokenType.COMMA]));
-		}
-		
-		_consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.");
+    if (isMethod) {
+      if (!_match([TokenType.LEFT_PAREN])) isGetter = true;
+    } else {
+      _consume(TokenType.LEFT_PAREN, "Expect '(' after $type name.");
+    }
 
+    List<Token> params = [];
+
+    if (!isGetter) {
+      if (!_check(TokenType.RIGHT_PAREN)) {
+        do {
+          if (params.length >= 255) {
+            error(_peek(), "Cannot have more than 255 parameters.");
+          } 
+          params.add(_consume(TokenType.IDENTIFIER, "Expect parameter name."));
+        } while (_match([TokenType.COMMA]));
+      }
+      
+      _consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.");
+    }
+		
 		_consume(TokenType.LEFT_BRACE, "Expect '{' before $type body.");
 		List<Stmt> body = _getBlockStatement();
 
-		return new FunctionStmt(name, params, body, _static);
+		return new FunctionStmt(name, params, body, _static, isGetter);
 	}
 
 	VarStmt _getVarDeclaration() {

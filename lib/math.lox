@@ -44,7 +44,7 @@ class Math {
         return _math_log(a); 
     }
 
-    static pi() {
+    static pi {
         return _math_pi();
     }
 }
