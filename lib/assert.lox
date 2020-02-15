@@ -1,0 +1,5 @@
+// Library lox:assert
+
+fun assert(cond, error) {
+    if (!cond) throw error;
+}

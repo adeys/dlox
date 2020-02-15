@@ -52,8 +52,9 @@ class FunctionStmt extends Stmt {
 	Token name;
 	List<Token> params;
 	List<Stmt> body;
+  bool isStatic = false;
 
-	FunctionStmt(Token name, List<Token> params, List<Stmt> body) {
+	FunctionStmt(Token name, List<Token> params, List<Stmt> body, bool _static): isStatic = _static {
 		this.name = name;
 		this.params = params;
 		this.body = body;
@@ -168,6 +169,21 @@ class ImportStmt extends Stmt {
 }
 
 
+class ThrowStmt extends Stmt {
+	Token keyword;
+	Expr message;
+
+	ThrowStmt(Token keyword, Expr message) {
+		this.keyword = keyword;
+		this.message = message;
+	}
+
+	accept(StmtVisitor visitor) {
+		return visitor.visitThrowStmt(this);
+	}
+}
+
+
 abstract class StmtVisitor {
 
 	visitBlockStmt(BlockStmt expr) {
@@ -211,6 +227,10 @@ abstract class StmtVisitor {
 	}
 
 	visitImportStmt(ImportStmt expr) {
+		return expr.accept(this);
+	}
+
+	visitThrowStmt(ThrowStmt expr) {
 		return expr.accept(this);
 	}
 

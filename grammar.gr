@@ -8,7 +8,7 @@ lambda → "(" parameters? ")" block;
 parameters → IDENTIFIER ("," IDENTIFIER)* ; 
 varDecl → "let" IDENTIFIER ( "=" expression )? ";" ;
 
-statement → exprStmt | forStmt | ifStmt | printStmt | returnStmt | whileStmt | breakStmt | importStmt | block ;
+statement → exprStmt | forStmt | ifStmt | printStmt | returnStmt | whileStmt | breakStmt | importStmt | throwStmt | block ;
 exprStmt → expression ";" ;
 forStmt → "for" "(" ( varDecl | exprStmt | ";" ) expression? ";" expression? ")" statement ;
 ifStmt → "if" "(" expression ")" statement ("else" statement)? ;
@@ -17,6 +17,7 @@ returnStmt → "return" expression? ";" ;
 whileStmt → "while" "(" expression ")" statement ;
 breakStmt → "break" ";" ;
 importStmt → "import" STRING ";" ;
+throwStmt → "throw" STRING ";" ;
 block → "{" declaration* "}" ;
 
 expression → assignment ;

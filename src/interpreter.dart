@@ -1,6 +1,7 @@
 import 'dart:collection';
 
 import 'expr.dart';
+import 'std/core.dart';
 import 'tokens.dart';
 import 'error.dart';
 import 'env.dart';
@@ -15,9 +16,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
   final Lox _parent;
 
 	Interpreter(Lox lox): _parent = lox {
-		globals.define('clock', new NativeFunction((Interpreter interpreter, List<Object> args) {
-			return DateTime.now().millisecondsSinceEpoch/1000;
-		}, 0));
+		registerStdLib(globals);
 
 		_env = globals;
 	}
@@ -30,7 +29,9 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 			}
 		} on RuntimeError catch (e) {
 			Lox.runtimeError(e);
-		}
+		} on Throw catch (e) {
+      print('Runtime Exception: ${e.value}');
+    }
 			
 		return result;
 	}
@@ -43,7 +44,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 		return stmt.accept(this);
 	}
 
-	Object _evaluate(Expr expr) {
+	Object evaluate(Expr expr) {
 		return expr.accept(this);
 	}
 
@@ -76,8 +77,8 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 	@override
 	Object visitBinaryExpr(BinaryExpr expr) {
-		Object left = _evaluate(expr.left);
-		Object right = _evaluate(expr.right);
+		Object left = evaluate(expr.left);
+		Object right = evaluate(expr.right);
 
 		switch (expr.op.type) {
 			case TokenType.EQUAL_EQUAL: return _isEqual(left, right);
@@ -133,7 +134,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 	@override
 	Object visitGroupingExpr(GroupingExpr expr) {
-		return _evaluate(expr.expr);
+		return evaluate(expr.expr);
 	}
 
 	@override
@@ -143,7 +144,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 	@override
 	Object visitUnaryExpr(UnaryExpr expr) {
-		Object right = _evaluate(expr.right);
+		Object right = evaluate(expr.right);
 
 		switch (expr.op.type) {
 			case TokenType.MINUS:{
@@ -182,12 +183,12 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 	@override
 	Object visitExpressionStmt(ExpressionStmt stmt) {
-		return _evaluate(stmt.expression);
+		return evaluate(stmt.expression);
 	}
 
 	@override
 	void visitPrintStmt(PrintStmt stmt) {
-		Object val = _evaluate(stmt.expression);
+		Object val = evaluate(stmt.expression);
 		print(stringify(val));
 		return null;
 	}
@@ -197,7 +198,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 		Object value = null;
 
 		if (expr.initializer != null) {
-			value = _evaluate(expr.initializer);
+			value = evaluate(expr.initializer);
 		}
 
 		_env.define(expr.name.lexeme, value);
@@ -219,7 +220,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 	@override
 	Object visitAssignExpr(AssignExpr expr) {
-		Object value = _evaluate(expr.value);
+		Object value = evaluate(expr.value);
 
 		int dist = _locals[expr];
 		if (dist != null) {
@@ -239,7 +240,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 	@override
 	Object visitIfStmt(IfStmt expr) {
-		if (_isTruthy(_evaluate(expr.condition))) {
+		if (_isTruthy(evaluate(expr.condition))) {
 			_execute(expr.thenStmt);
 		} else if (expr.elseStmt != null) {
 			_execute(expr.elseStmt);
@@ -250,20 +251,20 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 	@override
 	Object visitLogicalExpr(LogicalExpr expr) {
-		Object left = _evaluate(expr.left);
+		Object left = evaluate(expr.left);
 		if (expr.opt.type == TokenType.OR) {
 			if (_isTruthy(left)) return left;
 		} else {
 			if (!_isTruthy(left)) return left;
 		} 
 		
-		return _evaluate(expr.right);
+		return evaluate(expr.right);
 	}
 
 	@override
 	void visitWhileStmt(WhileStmt expr) {
 		try {
-			while(_isTruthy(_evaluate(expr.condition))) {
+			while(_isTruthy(evaluate(expr.condition))) {
 				_execute(expr.body);
 			}
 		} on Break {
@@ -275,9 +276,9 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 	@override
 	Object visitCallExpr(CallExpr expr) {
-		Object callee = _evaluate(expr.callee);
+		Object callee = evaluate(expr.callee);
 
-		List<Object> args = expr.arguments.map((arg) => _evaluate(arg)).toList();
+		List<Object> args = expr.arguments.map((arg) => evaluate(arg)).toList();
 
 		if (!(callee is LoxCallable)) {
 			throw new RuntimeError(expr.paren, "Can only call functions and classes.");
@@ -288,12 +289,12 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 			throw new RuntimeError(expr.paren, "Expected ${function.arity()} arguments but got ${args.length}.");
 		}
 
-		return function.call(this, args);
+		return function.callFn(this, args);
 	}
 
 	@override
 	Object visitFunctionStmt(FunctionStmt stmt) {
-		LoxFunction func = new LoxFunction(stmt, _env, false);
+		LoxFunction func = new LoxFunction(stmt, _env, false, false);
 		_env.define(stmt.name.lexeme, func);
 		return func;
 	}
@@ -301,7 +302,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 	@override
 	void visitReturnStmt(ReturnStmt expr) {
 		Object value = null;
-		if (expr.value != null) value = _evaluate(expr.value);
+		if (expr.value != null) value = evaluate(expr.value);
 
 		throw new Return(value);
 	}
@@ -310,7 +311,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 	void visitClassStmt(ClassStmt stmt) {
 		Object superclass = null;
 		if (stmt.superclass != null) {
-			superclass = _evaluate(stmt.superclass);
+			superclass = evaluate(stmt.superclass);
 			if (!(superclass is LoxClass)) {
 				throw new RuntimeError(stmt.superclass.name, "Superclass must be a class");
 			}
@@ -325,14 +326,14 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 		Map<String, LoxFunction> methods = new HashMap();
 		for (FunctionStmt method in stmt.methods) {
-			LoxFunction func = new LoxFunction(method, _env, method.name.lexeme == 'construct');
+			LoxFunction func = new LoxFunction(method, _env, method.name.lexeme == 'construct', method.isStatic);
 			methods[method.name.lexeme] = func;
 		}
 
 		// Provide a default constructor to base class instance
 		if (stmt.superclass == null && !methods.containsKey('construct')) {
-			FunctionStmt functionStmt = new FunctionStmt(null, [], []);
-			methods['construct'] = new LoxFunction(functionStmt, _env, true);
+			FunctionStmt functionStmt = new FunctionStmt(null, [], [], false);
+			methods['construct'] = new LoxFunction(functionStmt, _env, true, false);
 		}
 
 		LoxClass klass = new LoxClass(stmt.name.lexeme, superclass as LoxClass, methods);
@@ -346,7 +347,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 	@override
 	Object visitGetExpr(GetExpr expr) {
-		Object obj = _evaluate(expr.object);
+		Object obj = evaluate(expr.object);
 		if (obj is LoxInstance) {
 			return obj.get(expr.name);
 		}
@@ -356,13 +357,13 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 	@override
 	void visitSetExpr(SetExpr expr) {
-		Object obj = _evaluate(expr.object);
+		Object obj = evaluate(expr.object);
 
 		if(!(obj is LoxInstance)) {
 			throw new RuntimeError(expr.name, "Only instances have fields");
 		}
 
-		Object value = _evaluate(expr.value);
+		Object value = evaluate(expr.value);
 		(obj as LoxInstance).set(expr.name, value);
 
 		return null;
@@ -390,10 +391,10 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 	@override
 	Object visitTernaryExpr(TernaryExpr expr) {
-		if (_isTruthy(_evaluate(expr.condition))) {
-			return _evaluate(expr.left);
+		if (_isTruthy(evaluate(expr.condition))) {
+			return evaluate(expr.left);
 		} else {
-			return _evaluate(expr.right);
+			return evaluate(expr.right);
 		}
 	}
 
@@ -411,6 +412,12 @@ class Interpreter implements ExprVisitor, StmtVisitor {
   void visitImportStmt(ImportStmt stmt) {
     String target = stmt.target.value;
     _parent.runFile(target);
+    return null;
+  }
+
+  @override
+  visitThrowStmt(ThrowStmt stmt) {
+    throw new RuntimeError(stmt.keyword, evaluate(stmt.message));
     return null;
   }
 }

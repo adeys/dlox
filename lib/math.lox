@@ -1,0 +1,50 @@
+// Library lox:math
+
+import "lox:assert";
+
+fun is(var, type) {
+    return typeof(var) == type;
+}
+
+class Math {
+    static pow(a, b) {
+        assert(is(a, "number"), "Expected number operands in function 'Math.pow'.");
+        assert(is(b, "number"), "Expected number operands in function 'Math.pow'.");
+
+        return _math_pow(a, b); 
+    }
+
+    static sin(a) {
+        assert(is(a, "number"), "Expected number operands in function 'Math.sin'.");
+        return _math_sin(a); 
+    }
+
+    static cos(a) {
+        assert(is(a, "number"), "Expected number operands in function 'Math.cos'.");
+        return _math_cos(a); 
+    }
+
+    static tan(a) {
+        assert(is(a, "number"), "Expected number operands in function 'Math.tan'.");
+        return _math_tan(a); 
+    }
+
+    static sqrt(a) {
+        assert(is(a, "number"), "Expected number operands in function 'Math.sqrt'.");
+        return _math_sqrt(a); 
+    }
+
+    static exp(a) {
+        assert(is(a, "number"), "Expected number operands in function 'Math.exp'.");
+        return _math_exp(a); 
+    }
+    
+    static log(a) {
+        assert(is(a, "number"), "Expected number operands in function 'Math.log'.");
+        return _math_log(a); 
+    }
+
+    static pi() {
+        return _math_pi();
+    }
+}

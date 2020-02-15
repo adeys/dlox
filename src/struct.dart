@@ -8,7 +8,7 @@ import 'tokens.dart';
 
 abstract class LoxCallable {
 
-	Object call(Interpreter interpreter, List<Object> args);
+	Object callFn(Interpreter interpreter, List<Object> args);
 
 	int arity();
 }
@@ -22,7 +22,7 @@ class NativeFunction implements LoxCallable {
 		_arity = arity;
 	}
 
-	Object call(Interpreter interpreter, List<Object> args) {;
+	Object callFn(Interpreter interpreter, List<Object> args) {;
 		return callable(interpreter, args);
 	}
 
@@ -38,9 +38,10 @@ class LoxFunction implements LoxCallable {
 	final FunctionStmt _stmt;
 	final Environment _closure;
 	final bool _isInit;
+  final bool _isStatic;
 
-	LoxFunction(FunctionStmt stmt, Environment env, bool isInit): 
-		_stmt = stmt, _closure = env, _isInit = isInit {
+	LoxFunction(FunctionStmt stmt, Environment env, bool isInit, bool isStatic): 
+		_stmt = stmt, _closure = env, _isInit = isInit, _isStatic = isStatic {
 		
 	}
 	
@@ -50,7 +51,7 @@ class LoxFunction implements LoxCallable {
 	}
 
 	@override
-	Object call(Interpreter interpreter, List<Object> args) {
+	Object callFn(Interpreter interpreter, List<Object> args) {
 		Environment env = new Environment(_closure);
 
 		for (int i = 0; i < _stmt.params.length; i++) {
@@ -71,7 +72,7 @@ class LoxFunction implements LoxCallable {
 	LoxFunction bind(LoxInstance instance) {
 		Environment env = new Environment(_closure);
 		env.define('this', instance);
-		return new LoxFunction(_stmt, env, _isInit);
+		return new LoxFunction(_stmt, env, _isInit, _isStatic);
 	}
 
 	@override
@@ -80,17 +81,19 @@ class LoxFunction implements LoxCallable {
 	}
 }
 
-class LoxClass implements LoxCallable {
+class LoxClass extends LoxInstance implements LoxCallable {
 	final String _name;
-	Map<String, LoxFunction> _methods = new HashMap();
+	Map<String, LoxFunction> methods = new HashMap();
   final LoxClass _parent;
 
-	LoxClass(String name, LoxClass parent, Map<String, LoxFunction> methods): 
-    _name = name, _parent = parent, _methods = methods;
+	LoxClass(String name, LoxClass parent, Map<String, LoxFunction> _methods): 
+    _name = name, _parent = parent, methods = _methods, super(null) {
+      super._class = this;
+    }
 
 	LoxFunction findMethod(String name) {
-		if (_methods.containsKey(name)) {
-			return _methods[name];
+		if (methods.containsKey(name)) {
+			return methods[name];
 		}
 
 		if (_parent != null) {
@@ -113,15 +116,29 @@ class LoxClass implements LoxCallable {
 	}
 
 	@override
-	Object call(Interpreter interpreter, List<Object> args) {
+	LoxInstance callFn(Interpreter interpreter, List<Object> args) {
 		LoxInstance instance = new LoxInstance(this);
 		LoxFunction init = findMethod('construct');
 		if (init != null) {
-			init.bind(instance).call(interpreter, args);
+			init.bind(instance).callFn(interpreter, args);
 		}
 
 		return instance;
 	}
+
+  Object get(Token field) {
+    Object val = super.get(field);
+
+    if (val is LoxFunction && !val._isStatic) {
+      throw new RuntimeError(field, "Cannot call non-static method from class object.");
+    }
+
+    return val;
+  }
+
+  void set(Token name, Object value) {
+    throw new RuntimeError(name, "Cannot set field on class object.");
+  }
 }
 
 class LoxInstance {

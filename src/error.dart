@@ -21,3 +21,9 @@ class Return {
 class Break {
   
 }
+
+class Throw {
+  final Object value;
+
+  Throw(Object val): value = val;
+}

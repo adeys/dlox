@@ -55,6 +55,11 @@ class Parser {
 
 	FunctionStmt _getFuncDeclaration(String type) {
 		Token name;
+    bool _static = false;
+
+    if (type == 'method' && _match([TokenType.STATIC])) {
+      _static = true;
+    }
 		
 		if (type == 'lambda') {
 			var anon = '__anon_${Random().nextInt(256)}';
@@ -79,7 +84,7 @@ class Parser {
 		_consume(TokenType.LEFT_BRACE, "Expect '{' before $type body.");
 		List<Stmt> body = _getBlockStatement();
 
-		return new FunctionStmt(name, params, body);
+		return new FunctionStmt(name, params, body, _static);
 	}
 
 	VarStmt _getVarDeclaration() {
@@ -101,11 +106,20 @@ class Parser {
 		if (_match([TokenType.PRINT])) return _getPrintStatement();
 		if (_match([TokenType.RETURN])) return _getReturnStatement();
 		if (_match([TokenType.BREAK])) return _getBreakStatement();
+		if (_match([TokenType.THROW])) return _getThrowStatement();
 		if (_match([TokenType.WHILE])) return _getWhileStatement();
 		if (_match([TokenType.LEFT_BRACE])) return new BlockStmt(_getBlockStatement());
 
 		return _getExprStatement();
 	}
+
+  ThrowStmt _getThrowStatement() {
+    Token keyword = _previous();
+    Expr expr = _getExpression();
+
+    _consume(TokenType.SEMICOLON, "Expect ';' after throw statement.");
+    return new ThrowStmt(keyword, expr);
+  }
 
   ImportStmt _getImportStatement() {
     Token keyword = _previous();
