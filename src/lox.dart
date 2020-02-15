@@ -20,7 +20,7 @@ class Lox {
   }
 
 	void prompt() {
-		stdout.writeln('Dart Lox v1.1');
+		stdout.writeln('Dart Lox v2.1');
 		stdout.writeln('Hit Ctrl+C to quit\n');
     _baseDir = Directory.current.absolute.path;
 

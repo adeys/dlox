@@ -1,7 +1,9 @@
 import '../env.dart';
 import '../interpreter.dart';
 import '../struct.dart';
+import 'filesystem.dart';
 import 'math.dart';
+import 'string.dart';
 
 void registerStdLib(Environment env) {
   // Register globals
@@ -13,6 +15,8 @@ void registerStdLib(Environment env) {
     Object arg = args[0];
     if (arg == null) {
       return 'nil';
+    } else if (arg is bool) {
+      return 'boolean';
     } else if (arg is num) {
       return 'number';
     } else if (arg is String) {
@@ -27,4 +31,6 @@ void registerStdLib(Environment env) {
   }, 1));
 
   registerMath(env);
+  registerString(env);
+  registerFilesystem(env);
 }

@@ -1,0 +1,23 @@
+// Library lox:fs
+
+import "lox:assert";
+
+class File {
+    construct(path) {
+        assert(is(path, "string"), "Parameter to FIle constructor must be of type string.");
+
+        this.path = _fs_absolute(path);
+    }
+
+    write(content, erase) {
+        return _fs_write_file(this.path, content, erase);
+    }
+
+    read() {
+        return _fs_read_file(this.path);
+    }
+
+    path {
+        return this.path;
+    }
+}

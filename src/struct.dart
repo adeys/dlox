@@ -158,7 +158,15 @@ class LoxInstance {
 		}
 
 		LoxFunction method = _class.findMethod(field.lexeme);
-		if (method != null) return method.bind(this);
+		if (method != null) {
+      method = method.bind(this);
+
+      if (method._isGetter) {
+        return method.callFn(interpreter, []);
+      }
+
+      return method;
+    }
 
 		throw new RuntimeError(field, "Undefined property '${field.lexeme}'.");
 	}
