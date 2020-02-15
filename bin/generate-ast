@@ -51,7 +51,8 @@ main(List<String> argv) {
 			"Return : Token keyword, Expr value",
 			"Var : Token name, Expr initializer",
 			"While : Expr condition, Stmt body",
-			"Break : Token keyword"
+			"Break : Token keyword",
+            "Import : Token keyword, LiteralExpr target"
 		];
 		buffer.clear();
 

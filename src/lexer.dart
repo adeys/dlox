@@ -25,7 +25,8 @@ class Lexer {
 		"return": TokenType.RETURN,
 		"print": TokenType.PRINT,
 		"let": TokenType.VAR,
-		"fun": TokenType.FUN
+		"fun": TokenType.FUN,
+    "import": TokenType.IMPORT
 	};
 
 	Lexer(this.source);

@@ -12,8 +12,9 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 	final Environment globals = new Environment(null);
 	Environment _env;
 	final Map<Expr, int> _locals = new HashMap<Expr, int>();
+  final Lox _parent;
 
-	Interpreter() {
+	Interpreter(Lox lox): _parent = lox {
 		globals.define('clock', new NativeFunction((Interpreter interpreter, List<Object> args) {
 			return DateTime.now().millisecondsSinceEpoch/1000;
 		}, 0));
@@ -368,12 +369,12 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 	}
 
 	@override
-	visitThisExpr(ThisExpr expr) {
+	Object visitThisExpr(ThisExpr expr) {
 		return _lookupVariable(expr.keyword, expr);
 	}
 
 	@override
-	visitSuperExpr(SuperExpr expr) {
+	LoxFunction visitSuperExpr(SuperExpr expr) {
 		int dist = _locals[expr];
 		LoxClass superclass = _env.getAt(dist, 'super');
 		LoxInstance obj = _env.getAt(dist - 1, 'this');
@@ -402,7 +403,14 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 	}
 
 	@override
-	visitLambdaExpr(LambdaExpr expr) {
+	Object visitLambdaExpr(LambdaExpr expr) {
 		return _execute(expr.func);
 	}
+
+  @override
+  void visitImportStmt(ImportStmt stmt) {
+    String target = stmt.target.value;
+    _parent.runFile(target);
+    return null;
+  }
 }

@@ -153,6 +153,21 @@ class BreakStmt extends Stmt {
 }
 
 
+class ImportStmt extends Stmt {
+	Token keyword;
+	LiteralExpr target;
+
+	ImportStmt(Token keyword, LiteralExpr target) {
+		this.keyword = keyword;
+		this.target = target;
+	}
+
+	accept(StmtVisitor visitor) {
+		return visitor.visitImportStmt(this);
+	}
+}
+
+
 abstract class StmtVisitor {
 
 	visitBlockStmt(BlockStmt expr) {
@@ -192,6 +207,10 @@ abstract class StmtVisitor {
 	}
 
 	visitBreakStmt(BreakStmt expr) {
+		return expr.accept(this);
+	}
+
+	visitImportStmt(ImportStmt expr) {
 		return expr.accept(this);
 	}
 

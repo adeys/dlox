@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:io';
 
 import 'expr.dart';
 import 'interpreter.dart';
@@ -25,13 +26,15 @@ enum LoopType {
 }
 
 class Resolver implements ExprVisitor, StmtVisitor {
+  final String _baseDir;
+  final String _coreLibDir = File.fromUri(Platform.script).parent.absolute.path + '/lib';
 	final Interpreter _interpreter;
 	ListQueue<HashMap<String, bool>> _scopes = new ListQueue();
 	FunctionType _currentFunc = FunctionType.NONE;
 	ClassType _currentClass = ClassType.NONE;
 	LoopType _currentLoop = LoopType.NONE;
 
-	Resolver(Interpreter interpreter): _interpreter = interpreter;
+	Resolver(Interpreter interpreter, String baseDir): _interpreter = interpreter, _baseDir = baseDir;
 
 	void resolve(List<Stmt> stmts) {
 		for (Stmt stmt in stmts) {
@@ -227,7 +230,7 @@ class Resolver implements ExprVisitor, StmtVisitor {
 	}
 
 	@override
-	visitClassStmt(ClassStmt stmt) {
+	void visitClassStmt(ClassStmt stmt) {
 		ClassType enclosing = _currentClass;
 		_currentClass = ClassType.CLASS;
 
@@ -268,20 +271,20 @@ class Resolver implements ExprVisitor, StmtVisitor {
 	}
 
 	@override
-	visitGetExpr(GetExpr expr) {
+	void visitGetExpr(GetExpr expr) {
 		_resolve(expr.object);
 		return null;
 	}
 
 	@override
-	visitSetExpr(SetExpr expr) {
+	void visitSetExpr(SetExpr expr) {
 		_resolve(expr.value);
 		_resolve(expr.object);
 		return null;
 	}
 
 	@override
-	visitThisExpr(ThisExpr expr) {
+	void visitThisExpr(ThisExpr expr) {
 		if (_currentClass == ClassType.NONE) {
 			Lox.error(expr.keyword.line, "Cannot use 'this' outside of a class.");
 			return null;
@@ -292,7 +295,7 @@ class Resolver implements ExprVisitor, StmtVisitor {
 	}
 
 	@override
-	visitSuperExpr(SuperExpr expr) {
+	void visitSuperExpr(SuperExpr expr) {
 		if (_currentClass == ClassType.NONE) {
 			Lox.error(expr.keyword.line, "Cannot use 'super' outside of a class.");
 		} else if (_currentClass != ClassType.SUBCLASS) {
@@ -304,7 +307,7 @@ class Resolver implements ExprVisitor, StmtVisitor {
 	}
 
 	@override
-	visitTernaryExpr(TernaryExpr expr) {
+	void visitTernaryExpr(TernaryExpr expr) {
 		_resolve(expr.condition);
 		_resolve(expr.left);
 		_resolve(expr.right);
@@ -312,7 +315,7 @@ class Resolver implements ExprVisitor, StmtVisitor {
 	}
 
 	@override
-	visitBreakStmt(BreakStmt stmt) {
+	void visitBreakStmt(BreakStmt stmt) {
 		if (_currentLoop != LoopType.LOOP) {
 			Lox.error(stmt.keyword.line, "Cannot break outside from a loop context.");
 		}
@@ -321,9 +324,32 @@ class Resolver implements ExprVisitor, StmtVisitor {
 	}
 
 	@override
-	visitLambdaExpr(LambdaExpr expr) {
+	void visitLambdaExpr(LambdaExpr expr) {
 		_resolve(expr.func);
 		_resolveLocal(expr, expr.name);
 		return null;
 	}
+
+  @override
+  void visitImportStmt(ImportStmt stmt) {
+    String target = stmt.target.value;
+    bool isCore = false;
+
+    if (!target.startsWith('lox:')) {
+      target = _baseDir + (target.startsWith('/') ? target : '/' + target);
+    } else {
+      isCore = true;
+      target = target.split(':')[1];
+      target = "$_coreLibDir/$target.lox";
+    }
+    
+    File file = new File(target);
+    if (!file.existsSync()) {
+      Lox.error(stmt.keyword.line, "${isCore ? 'Library' : 'File'} '${stmt.target.value}' not found.");
+    }
+    
+    stmt.target.value = target;
+
+    return null;
+  }
 }

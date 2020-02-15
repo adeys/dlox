@@ -12,11 +12,17 @@ class Lox {
 	static bool hadError = false;
 	static bool hadRuntimeError = false;
 
-	static Interpreter _interpreter = new Interpreter();
+	static Interpreter _interpreter;
+  String _baseDir;
 	
+  Lox() {
+    _interpreter = new Interpreter(this);
+  }
+
 	void prompt() {
 		stdout.writeln('Dart Lox v1.1');
 		stdout.writeln('Hit Ctrl+C to quit\n');
+    _baseDir = Directory.current.absolute.path;
 
 		while (true) {
 			stdout.write('dlox> ');
@@ -30,6 +36,7 @@ class Lox {
 
 	void runFile(String file) async {
 		File program = new File(file);
+    _baseDir = program.parent.absolute.path;
 		run(program.readAsStringSync());
 
 		if (hadError) exit(65);
@@ -45,7 +52,7 @@ class Lox {
 
 		if (hadError) return null;
 
-		Resolver resolver = new Resolver(_interpreter);
+		Resolver resolver = new Resolver(_interpreter, _baseDir);
 		resolver.resolve(stmts);
 
 		if (hadError) return null;

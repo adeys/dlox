@@ -95,6 +95,7 @@ class Parser {
 	}
 
 	Stmt _getStatement() {
+    if (_match([TokenType.IMPORT])) return _getImportStatement();
 		if (_match([TokenType.FOR])) return _getForStatement();
 		if (_match([TokenType.IF])) return _getIfStatement();
 		if (_match([TokenType.PRINT])) return _getPrintStatement();
@@ -106,16 +107,24 @@ class Parser {
 		return _getExprStatement();
 	}
 
+  ImportStmt _getImportStatement() {
+    Token keyword = _previous();
+    Token target = _consume(TokenType.STRING, "Expect file name after 'import'.");
+    _consume(TokenType.SEMICOLON, "Expect ';' after import statement.");
+
+    return new ImportStmt(keyword, new LiteralExpr(target.literal));
+  }
+
 	PrintStmt _getPrintStatement() {
 		Expr expr = _getExpression();
-		_consume(TokenType.SEMICOLON, "Expect ';' after value.");
+		_consume(TokenType.SEMICOLON, "Expect ';' after print value.");
 
 		return new PrintStmt(expr);
 	}
 
 	BreakStmt _getBreakStatement() {
 		Token keyword = _previous();
-		_consume(TokenType.SEMICOLON, "Expect ';' after 'break' statement.");
+		_consume(TokenType.SEMICOLON, "Expect ';' after break statement.");
 		return new BreakStmt(keyword);
 	}
 
