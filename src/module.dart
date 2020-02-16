@@ -37,7 +37,7 @@ class ModuleResolver {
     String path;
 
     if (!name.startsWith('lox:')) {
-      path = baseDir.replaceAll(new RegExp('/\\.\$'), '/') + name.replaceFirst(new RegExp('^\\./'), '');
+      path = Directory(Directory(baseDir).absolute.path + '/' + name).resolveSymbolicLinksSync();
     } else {
       isCore = true;
       path = name.split(':')[1];
