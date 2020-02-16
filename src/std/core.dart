@@ -1,7 +1,9 @@
 import '../env.dart';
+import '../error.dart';
 import '../interpreter.dart';
 import '../struct.dart';
 import 'filesystem.dart';
+import 'io.dart';
 import 'math.dart';
 import 'string.dart';
 
@@ -30,7 +32,12 @@ void registerStdLib(Environment env) {
     }
   }, 1));
 
+  env.define('exit', new NativeFunction((Interpreter interpreter, List<Object> args) {
+    throw new Exit((args[0] as double).toInt());
+  }, 1));
+
   registerMath(env);
   registerString(env);
   registerFilesystem(env);
+  registerIO(env);
 }

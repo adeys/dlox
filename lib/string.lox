@@ -38,6 +38,13 @@ class String {
         return String(_str_substr(this.str, start, is(end, "number") ? start + end : end));
     }
 
+    startsWith(str) {
+        assert(is(this.str, "string"), "Expected parameter 1 of type string in function 'String.startsWith'.");
+        assert(is(str, "string"), "Expected parameter 2 of type number in function 'String.startsWith'.");
+
+        return _str_startswith(this.str, str);
+    }
+
     toString() {
         return this.str;
     }
