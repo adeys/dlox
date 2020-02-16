@@ -24,7 +24,7 @@ class Environment {
 			return;
 		}
 
-		throw new RuntimeError(name, "Undefined variable '${name.lexeme}'.");
+		throw new RuntimeError(name, "Cannot assign undefined variable '${name.lexeme}'.");
 	}
 
 	void assignAt(int dist, Token name, Object value) {

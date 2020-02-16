@@ -158,11 +158,12 @@ class BreakStmt extends Stmt {
 
 class ImportStmt extends Stmt {
 	Token keyword;
-	LiteralExpr target;
+	LiteralExpr module;
+  String target = "";
 
 	ImportStmt(Token keyword, LiteralExpr target) {
 		this.keyword = keyword;
-		this.target = target;
+		this.module = target;
 	}
 
 	accept(StmtVisitor visitor) {

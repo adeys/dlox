@@ -1,8 +1,10 @@
 import 'lox.dart';
+import 'module.dart';
 import 'tokens.dart';
 
 class Lexer {
-	final String source;
+	final String input;
+  final SourceFile source;
 	List<Token> tokens = [];
 	int start = 0;
 	int current = 0;
@@ -31,7 +33,7 @@ class Lexer {
     "static": TokenType.STATIC
 	};
 
-	Lexer(this.source);
+	Lexer(SourceFile _source): source = _source, input = _source.source;
 
 	List<Token> tokenize() {
 		while(!eof()) {
@@ -39,7 +41,7 @@ class Lexer {
 			_getNext();
 		}
 
-		this.tokens.add(new Token(TokenType.EOF, "", null, line));
+		this.tokens.add(new Token(TokenType.EOF, "", null, source.file, line));
 		return this.tokens;
 	}
 
@@ -90,7 +92,7 @@ class Lexer {
 				} else if (_isAlpha(char)) {
 					_getIdentifier();
 				} else {
-					Lox.error(line, 'Unexpected character $char');
+					Lox.error(source.file, line, 'Unexpected character $char');
 					break;
 				}
 		}
@@ -103,13 +105,13 @@ class Lexer {
 		}
 
 		if (eof()) {
-			Lox.error(line, 'Unterminated string.');
+			Lox.error(source.file, line, 'Unterminated string.');
 			return;
 		}
 
 		_advance();
 
-		addToken(TokenType.STRING, source.substring(start + 1, current - 1));
+		addToken(TokenType.STRING, input.substring(start + 1, current - 1));
 	}
 
 	void _getNumber() {
@@ -121,13 +123,13 @@ class Lexer {
 			while(_isDigit(_peek())) _advance();
 		}
 
-		addToken(TokenType.NUMBER, double.parse(source.substring(start, current)));
+		addToken(TokenType.NUMBER, double.parse(input.substring(start, current)));
 	}
 
 	void _getIdentifier() {
 		while(_isAlphaNumeric(_peek())) _advance();
 
-		var token = source.substring(start, current);
+		var token = input.substring(start, current);
 
 		TokenType type = keywords[token];
 		if (type == null) type = TokenType.IDENTIFIER;
@@ -142,7 +144,7 @@ class Lexer {
 		}
 
 		if (eof()) {
-			Lox.error(line, 'Unterminated multi line comment section.');
+			Lox.error(source.file, line, 'Unterminated multi line comment section.');
 			return;
 		}
 
@@ -156,23 +158,23 @@ class Lexer {
 	}
 
 	void addToken(TokenType type, Object literal) {
-		var token = new Token(type, source.substring(start, current), literal, line);
+		var token = new Token(type, input.substring(start, current), literal, source.file, line);
 		tokens.add(token);
 	}
 
 	String _advance() {
 		current++;
-		return source[current - 1];
+		return input[current - 1];
 	}
 
 	String _peek() {
-		return eof() ? '' : source[current];
+		return eof() ? '' : input[current];
 	}
 
 	String _peekNext() {
-		if (current + 1 >= source.length) return '';
+		if (current + 1 >= input.length) return '';
 		
-		return source[current + 1];
+		return input[current + 1];
 	}
 
 	bool _match(String expected) {
@@ -185,7 +187,7 @@ class Lexer {
 	}
 
 	bool eof() {
-		return current >= source.length;
+		return current >= input.length;
 	}
 
 	bool _isDigit(String char) {

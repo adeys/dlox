@@ -1,9 +1,9 @@
 import 'dart:collection';
-import 'dart:io';
 
 import 'expr.dart';
 import 'interpreter.dart';
 import 'lox.dart';
+import 'module.dart';
 import 'stmt.dart';
 import 'tokens.dart';
 
@@ -26,15 +26,13 @@ enum LoopType {
 }
 
 class Resolver implements ExprVisitor, StmtVisitor {
-  final String _baseDir;
-  final String _coreLibDir = File.fromUri(Platform.script).parent.absolute.path + '/lib';
 	final Interpreter _interpreter;
 	ListQueue<HashMap<String, bool>> _scopes = new ListQueue();
 	FunctionType _currentFunc = FunctionType.NONE;
 	ClassType _currentClass = ClassType.NONE;
 	LoopType _currentLoop = LoopType.NONE;
 
-	Resolver(Interpreter interpreter, String baseDir): _interpreter = interpreter, _baseDir = baseDir;
+	Resolver(Interpreter interpreter): _interpreter = interpreter;
 
 	void resolve(List<Stmt> stmts) {
 		for (Stmt stmt in stmts) {
@@ -54,7 +52,7 @@ class Resolver implements ExprVisitor, StmtVisitor {
 		Map<String, bool> scope = _scopes.first;
 
 		if (scope.containsKey(token.lexeme)) {
-			Lox.error(token.line, "Variable with this name ('${token.lexeme}') already declared in this scope.");
+			Lox.error(token.file, token.line, "Variable with this name ('${token.lexeme}') already declared in this scope.");
 		}
 
 		_scopes.first[token.lexeme] = false;
@@ -180,12 +178,12 @@ class Resolver implements ExprVisitor, StmtVisitor {
 	@override
 	void visitReturnStmt(ReturnStmt stmt) {
 		if (_currentFunc == FunctionType.NONE) {
-			Lox.error(stmt.keyword.line, "Cannot return from top-level code");
+			Lox.error(stmt.keyword.file, stmt.keyword.line, "Cannot return from top-level code");
 		}
 
 		if (stmt.value != null) {
 			if (_currentFunc == FunctionType.INITIALIZER) {
-				Lox.error(stmt.keyword.line, 'Cannot return a value from class constructor.');
+				Lox.error(stmt.keyword.file, stmt.keyword.line, 'Cannot return a value from class constructor.');
 			}
 			_resolve(stmt.value);	
 		}
@@ -210,7 +208,7 @@ class Resolver implements ExprVisitor, StmtVisitor {
 	@override
 	void visitVariableExpr(VariableExpr expr) {
 		if (_scopes.isNotEmpty && _scopes.first[expr.name.lexeme] == false) {
-			Lox.error(expr.name.line, "Cannot read local variable in its own initializer.");
+			Lox.error(expr.name.file, expr.name.line, "Cannot read local variable in its own initializer.");
 		}
 
 		_resolveLocal(expr, expr.name);
@@ -238,7 +236,7 @@ class Resolver implements ExprVisitor, StmtVisitor {
 		_define(stmt.name);
 
 		if (stmt.superclass != null && stmt.name.lexeme == stmt.superclass.name.lexeme) {
-			Lox.error(stmt.superclass.name.line, "A class cannot inherit from itself.");
+			Lox.error(stmt.superclass.name.file, stmt.superclass.name.line, "A class cannot inherit from itself.");
 		}
 
 		if (stmt.superclass != null) {
@@ -286,7 +284,7 @@ class Resolver implements ExprVisitor, StmtVisitor {
 	@override
 	void visitThisExpr(ThisExpr expr) {
 		if (_currentClass == ClassType.NONE) {
-			Lox.error(expr.keyword.line, "Cannot use 'this' outside of a class.");
+			Lox.error(expr.keyword.file, expr.keyword.line, "Cannot use 'this' outside of a class.");
 			return null;
 		}
 
@@ -297,9 +295,9 @@ class Resolver implements ExprVisitor, StmtVisitor {
 	@override
 	void visitSuperExpr(SuperExpr expr) {
 		if (_currentClass == ClassType.NONE) {
-			Lox.error(expr.keyword.line, "Cannot use 'super' outside of a class.");
+			Lox.error(expr.keyword.file, expr.keyword.line, "Cannot use 'super' outside of a class.");
 		} else if (_currentClass != ClassType.SUBCLASS) {
-			Lox.error(expr.keyword.line, "Cannot use 'super' in a class with no superclass.");
+			Lox.error(expr.keyword.file, expr.keyword.line, "Cannot use 'super' in a class with no superclass.");
 		}
 
 		_resolveLocal(expr, expr.keyword);
@@ -317,7 +315,7 @@ class Resolver implements ExprVisitor, StmtVisitor {
 	@override
 	void visitBreakStmt(BreakStmt stmt) {
 		if (_currentLoop != LoopType.LOOP) {
-			Lox.error(stmt.keyword.line, "Cannot break outside from a loop context.");
+			Lox.error(stmt.keyword.file, stmt.keyword.line, "Cannot use 'break' outside from a loop context.");
 		}
 
 		return null;
@@ -332,23 +330,11 @@ class Resolver implements ExprVisitor, StmtVisitor {
 
   @override
   void visitImportStmt(ImportStmt stmt) {
-    String target = stmt.target.value;
-    bool isCore = false;
-
-    if (!target.startsWith('lox:')) {
-      target = _baseDir + (target.startsWith('/') ? target : '/' + target);
-    } else {
-      isCore = true;
-      target = target.split(':')[1];
-      target = "$_coreLibDir/$target.lox";
+    try {
+      ModuleResolver.resolve(stmt.module.value);
+    } catch (err) {
+      Lox.error(stmt.keyword.file, stmt.keyword.line, err);
     }
-    
-    File file = new File(target);
-    if (!file.existsSync()) {
-      Lox.error(stmt.keyword.line, "${isCore ? 'Library' : 'File'} '${stmt.target.value}' not found.");
-    }
-    
-    stmt.target.value = target;
 
     return null;
   }

@@ -35,9 +35,7 @@ class String {
         assert(is(this.str, "string"), "Expected parameter 1 of type string in function 'String.substr'.");
         assert(is(start, "number"), "Expected parameter 2 of type number in function 'String.substr'.");
 
-        if (is(end, "number")) end = start + end;
-
-        return String(_str_substr(this.str, start, end));
+        return String(_str_substr(this.str, start, is(end, "number") ? start + end : end));
     }
 
     toString() {

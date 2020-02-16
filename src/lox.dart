@@ -2,9 +2,8 @@ import 'dart:io';
 
 import 'error.dart';
 import 'interpreter.dart';
-import 'lexer.dart';
+import 'module.dart';
 import 'parser.dart';
-import 'resolver.dart';
 import 'stmt.dart';
 import 'tokens.dart';
 
@@ -14,6 +13,7 @@ class Lox {
 
 	static Interpreter _interpreter;
   String _baseDir;
+  File script = null;
 	
   Lox() {
     _interpreter = new Interpreter(this);
@@ -37,6 +37,7 @@ class Lox {
 	void runFile(String file) async {
 		File program = new File(file);
     _baseDir = program.parent.absolute.path;
+    script = program;
 		run(program.readAsStringSync());
 
 		if (hadError) exit(65);
@@ -44,41 +45,38 @@ class Lox {
 	}
 
 	Object run(String program) {
-		Lexer lexer = new Lexer(program);
+    ModuleResolver.baseDir = _baseDir;
+    LoxModule module = ModuleResolver.load(script.path);
 
-		List<Token> tokens = lexer.tokenize();
-		Parser parser = new Parser(tokens);
+		Parser parser = new Parser.fromSource(module.source);
 		List<Stmt> stmts = parser.parse();
 
 		if (hadError) return null;
 
-		Resolver resolver = new Resolver(_interpreter, _baseDir);
-		resolver.resolve(stmts);
+    module.statements = stmts;
 
-		if (hadError) return null;
-
-		return _interpreter.interpret(stmts);
+		return _interpreter.interpret(module);
 	}
 
-	static void error(int line, String message) {
-		_report(line, "", message);
+	static void error(String file, int line, String message) {
+		_report(file, line, "", message);
 	}
 
 	static void parseError(Token token, String message) {
 		if (token.type == TokenType.EOF) {
-			_report(token.line, "at end", message);
+			_report(token.file, token.line, "at end", message);
 		} else {
-			_report(token.line, "at '" + token.lexeme + "'", message);
+			_report(token.file, token.line, "at '" + token.lexeme + "'", message);
 		}
 	}
 
 	static void runtimeError(RuntimeError err) {
-		stderr.writeln(err.message + '\n[line ' + err.token.line.toString() + '].');
+		stderr.writeln(err.message + '\n[line ' + err.token.line.toString() + '](file: ${err.token.file}).');
 		hadRuntimeError = true;
 	}
 
-	static void _report(int line, String where, String message) {
-		stderr.writeln('[line $line]: Error $where: $message');
+	static void _report(String file, int line, String where, String message) {
+		stderr.writeln('[line $line]: Error $where: $message(file: ${file})');
 		hadError = true;
 	}
 }

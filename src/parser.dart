@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'lexer.dart';
+import 'module.dart';
 import 'tokens.dart';
 import 'expr.dart';
 import 'lox.dart';
@@ -8,8 +10,13 @@ import 'stmt.dart';
 class Parser {
 	final List<Token> _tokens;
 	int _current = 0;
+  SourceFile source;
 
 	Parser(this._tokens);
+  
+  Parser.fromSource(SourceFile _source): _tokens = (new Lexer(_source)).tokenize() {
+    source = _source;
+  }
 
 	List<Stmt> parse() {
 		List<Stmt> statements = new List();
@@ -65,7 +72,7 @@ class Parser {
 		
 		if (type == 'lambda') {
 			var anon = '__anon_${Random().nextInt(256)}';
-			name = new Token(TokenType.STRING, anon, anon, _previous().line);
+			name = new Token(TokenType.STRING, anon, anon, source.file, _previous().line);
 		} else {
 			name = _consume(TokenType.IDENTIFIER, "Expect ${type} name.");
 		}

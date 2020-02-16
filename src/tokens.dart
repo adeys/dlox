@@ -23,12 +23,14 @@ class Token {
 	TokenType type;
 	Object literal;
 	String lexeme;
+  String file;
 	int line;
 
-	Token(TokenType type, String lexeme, Object literal, int line) {
+	Token(TokenType type, String lexeme, Object literal, String file, int line) {
 		this.type = type;
 		this.literal = literal;
 		this.lexeme = lexeme;
+    this.file = file;
 		this.line = line;
 	}
 

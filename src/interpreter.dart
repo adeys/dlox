@@ -1,6 +1,10 @@
 import 'dart:collection';
+import 'dart:io';
 
 import 'expr.dart';
+import 'module.dart';
+import 'parser.dart';
+import 'resolver.dart';
 import 'std/core.dart';
 import 'tokens.dart';
 import 'error.dart';
@@ -11,20 +15,28 @@ import 'struct.dart';
 
 class Interpreter implements ExprVisitor, StmtVisitor {
 	final Environment globals = new Environment(null);
-	Environment _env;
 	final Map<Expr, int> _locals = new HashMap<Expr, int>();
-  final Lox _parent;
+	Environment _env = new Environment(null);
+  List<LoxModule> _modules =  [];
 
-	Interpreter(Lox lox): _parent = lox {
+	Interpreter(Lox lox) {
 		registerStdLib(globals);
 
-		_env = globals;
+		_env.parent = globals;
 	}
 
-	Object interpret(List<Stmt> statements) {
+	Object interpret(LoxModule module) {
 		Object result;
+
+		Resolver resolver = new Resolver(this);
+		resolver.resolve(module.statements);
+
+		if (Lox.hadError) exit(65);
+
+    _modules.add(module);
+
 		try {
-			for (Stmt stmt in statements) {
+			for (Stmt stmt in module.statements) {
 				result = _execute(stmt);
 			}
 		} on RuntimeError catch (e) {
@@ -32,7 +44,9 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 		} on Throw catch (e) {
       print('Runtime Exception: ${e.value}');
     }
-			
+
+    _modules.removeLast();
+
 		return result;
 	}
 
@@ -410,8 +424,12 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
   @override
   void visitImportStmt(ImportStmt stmt) async {
-    String target = stmt.target.value;
-    await _parent.runFile(target);
+      LoxModule module = ModuleResolver.load(stmt.module.value);
+      List<Stmt> stmts = Parser.fromSource(module.source).parse();
+      
+      module.statements = stmts;
+      interpret(module);
+
     return null;
   }
 
