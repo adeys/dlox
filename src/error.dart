@@ -27,3 +27,9 @@ class Throw {
 
   Throw(Object val): value = val;
 }
+
+class Exit {
+  final Object value;
+
+  Exit(Object val): value = val;
+}

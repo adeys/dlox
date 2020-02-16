@@ -29,7 +29,10 @@ void registerString(Environment env) {
       } on RangeError {
         return "";
       }
-    }, 3)
+    }, 3),
+    'startswith': new NativeFunction((Interpreter _, List<Object> args) {
+      return args[0].toString().startsWith(args[1].toString());
+    }, 3),
   };
   
   map.forEach((String name, NativeFunction func) {

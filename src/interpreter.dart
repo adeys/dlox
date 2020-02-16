@@ -47,6 +47,8 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 			ErrorReporter.runtimeError(e);
 		} on Throw catch (e) {
       print('Runtime Exception: ${e.value}');
+    } on Exit catch(e) {
+      exit(e.value);
     }
 
     currentModule = old;

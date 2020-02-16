@@ -1,0 +1,24 @@
+class Stdin {
+    static readline() {
+        return _io_in_read();
+    }
+}
+
+class Stdout {
+    static write(line) {
+        return _io_out_write(line);
+    }
+
+    static writeln(line) {
+        return _io_out_writeln(line);
+    }
+}
+
+class Repl {
+    static prompt(line, handler) {
+        while(true) {
+            Stdout.write(line);
+            handler(Stdin.readline());
+        }
+    }
+}
