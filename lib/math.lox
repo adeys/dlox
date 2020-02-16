@@ -7,7 +7,7 @@ class Math {
         assert(is(a, "number"), "Expected parameters of type number in function 'Math.pow'.");
         assert(is(b, "number"), "Expected parameters of type number in function 'Math.pow'.");
 
-        return _math_pow(a, b); 
+        return _math_pow(a, b);
     }
 
     static sin(a) {
