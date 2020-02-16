@@ -1,10 +1,10 @@
 import 'dart:math';
 
+import 'error_reporter.dart';
 import 'lexer.dart';
 import 'module.dart';
 import 'tokens.dart';
 import 'expr.dart';
-import 'lox.dart';
 import 'stmt.dart';
 
 class Parser {
@@ -514,7 +514,7 @@ class Parser {
 	}
 
 	error(Token token, String msg) {
-		Lox.parseError(token, msg);
+		ErrorReporter.parseError(token, msg);
 
 		return new ParseError();
 	}

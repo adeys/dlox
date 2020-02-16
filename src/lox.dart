@@ -1,22 +1,19 @@
 import 'dart:io';
 
-import 'error.dart';
+import 'error_reporter.dart';
 import 'interpreter.dart';
 import 'module.dart';
 import 'parser.dart';
 import 'stmt.dart';
-import 'tokens.dart';
 
 class Lox {
-	static bool hadError = false;
-	static bool hadRuntimeError = false;
 
 	static Interpreter _interpreter;
   String _baseDir;
   File script = null;
 	
   Lox() {
-    _interpreter = new Interpreter(this);
+    _interpreter = new Interpreter();
   }
 
 	void prompt() {
@@ -30,7 +27,7 @@ class Lox {
 			res == null 
 				? null 
 				: stdout.writeln(_interpreter.stringify(res));
-			hadError = false;
+			ErrorReporter.hadError = false;
 		}
 	} 
 
@@ -40,8 +37,8 @@ class Lox {
     script = program;
 		run(program.readAsStringSync());
 
-		if (hadError) exit(65);
-		if (hadRuntimeError) exit(70);
+		if (ErrorReporter.hadError) exit(65);
+		if (ErrorReporter.hadRuntimeError) exit(70);
 	}
 
 	Object run(String program) {
@@ -51,32 +48,11 @@ class Lox {
 		Parser parser = new Parser.fromSource(module.source);
 		List<Stmt> stmts = parser.parse();
 
-		if (hadError) return null;
+		if (ErrorReporter.hadError) return null;
 
     module.statements = stmts;
 
 		return _interpreter.interpret(module);
 	}
 
-	static void error(String file, int line, String message) {
-		_report(file, line, "", message);
-	}
-
-	static void parseError(Token token, String message) {
-		if (token.type == TokenType.EOF) {
-			_report(token.file, token.line, "at end", message);
-		} else {
-			_report(token.file, token.line, "at '" + token.lexeme + "'", message);
-		}
-	}
-
-	static void runtimeError(RuntimeError err) {
-		stderr.writeln(err.message + '\n[line ' + err.token.line.toString() + '](file: ${err.token.file}).');
-		hadRuntimeError = true;
-	}
-
-	static void _report(String file, int line, String where, String message) {
-		stderr.writeln('[line $line]: Error $where: $message(file: ${file})');
-		hadError = true;
-	}
 }

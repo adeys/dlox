@@ -1,4 +1,4 @@
-import 'lox.dart';
+import 'error_reporter.dart';
 import 'module.dart';
 import 'tokens.dart';
 
@@ -92,7 +92,7 @@ class Lexer {
 				} else if (_isAlpha(char)) {
 					_getIdentifier();
 				} else {
-					Lox.error(source.file, line, 'Unexpected character $char');
+					ErrorReporter.error(source.file, line, 'Unexpected character $char');
 					break;
 				}
 		}
@@ -105,7 +105,7 @@ class Lexer {
 		}
 
 		if (eof()) {
-			Lox.error(source.file, line, 'Unterminated string.');
+			ErrorReporter.error(source.file, line, 'Unterminated string.');
 			return;
 		}
 
@@ -144,7 +144,7 @@ class Lexer {
 		}
 
 		if (eof()) {
-			Lox.error(source.file, line, 'Unterminated multi line comment section.');
+			ErrorReporter.error(source.file, line, 'Unterminated multi line comment section.');
 			return;
 		}
 

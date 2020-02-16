@@ -1,6 +1,7 @@
 import 'dart:collection';
 import 'dart:io';
 
+import 'error_reporter.dart';
 import 'expr.dart';
 import 'module.dart';
 import 'parser.dart';
@@ -9,7 +10,6 @@ import 'std/core.dart';
 import 'tokens.dart';
 import 'error.dart';
 import 'env.dart';
-import 'lox.dart';
 import 'stmt.dart';
 import 'struct.dart';
 
@@ -19,7 +19,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 	Environment _env = new Environment(null);
   List<LoxModule> _modules =  [];
 
-	Interpreter(Lox lox) {
+	Interpreter() {
 		registerStdLib(globals);
 
 		_env.parent = globals;
@@ -31,7 +31,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 		Resolver resolver = new Resolver(this);
 		resolver.resolve(module.statements);
 
-		if (Lox.hadError) exit(65);
+		if (ErrorReporter.hadError) exit(65);
 
     _modules.add(module);
 
@@ -40,7 +40,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 				result = _execute(stmt);
 			}
 		} on RuntimeError catch (e) {
-			Lox.runtimeError(e);
+			ErrorReporter.runtimeError(e);
 		} on Throw catch (e) {
       print('Runtime Exception: ${e.value}');
     }
