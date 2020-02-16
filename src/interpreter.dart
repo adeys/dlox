@@ -16,28 +16,32 @@ import 'struct.dart';
 class Interpreter implements ExprVisitor, StmtVisitor {
 	final Environment globals = new Environment(null);
 	final Map<Expr, int> _locals = new HashMap<Expr, int>();
-	Environment _env = new Environment(null);
-  List<LoxModule> _modules =  [];
+	Environment env = new Environment(null);
+  Map<String, LoxModule> modules =  {};
+  LoxModule currentModule;
 
 	Interpreter() {
 		registerStdLib(globals);
 
-		_env.parent = globals;
+		env.parent = globals;
 	}
 
 	Object interpret(LoxModule module) {
 		Object result;
+    LoxModule old = currentModule;
+    currentModule = module;
 
 		Resolver resolver = new Resolver(this);
 		resolver.resolve(module.statements);
 
 		if (ErrorReporter.hadError) exit(65);
 
-    _modules.add(module);
+    modules[module.name] = module;
 
 		try {
 			for (Stmt stmt in module.statements) {
 				result = _execute(stmt);
+        if (ErrorReporter.hadRuntimeError) exit(70);
 			}
 		} on RuntimeError catch (e) {
 			ErrorReporter.runtimeError(e);
@@ -45,8 +49,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
       print('Runtime Exception: ${e.value}');
     }
 
-    _modules.removeLast();
-
+    currentModule = old;
 		return result;
 	}
 
@@ -76,16 +79,16 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 		return object.toString();
 	}
 
-	void executeBlock(List<Stmt> statements, Environment env) {
-		Environment prev = _env;
+	void executeBlock(List<Stmt> statements, Environment _env) {
+		Environment prev = env;
 
 		try {
-			_env = env;
+			env = _env;
 			for (Stmt stmt in statements) {
 				_execute(stmt);
 			}
 		} finally {
-			_env = prev;
+			env = prev;
 		}
 	}
 
@@ -215,7 +218,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 			value = evaluate(expr.initializer);
 		}
 
-		_env.define(expr.name.lexeme, value);
+		env.define(expr.name.lexeme, value);
 	}
 
 	@override
@@ -226,9 +229,9 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 	Object _lookupVariable(Token name, Expr expr) {
 		int dist = _locals[expr];
 		if (dist != null) {
-			return _env.getAt(dist, name.lexeme);
+			return env.getAt(dist, name.lexeme);
 		} else {
-			return _env.get(name);
+			return env.get(name);
 		}
 	}
 
@@ -238,7 +241,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 		int dist = _locals[expr];
 		if (dist != null) {
-			_env.assignAt(dist, expr.name, value);
+			env.assignAt(dist, expr.name, value);
 		} else {
 			globals.assign(expr.name, value);
 		}
@@ -247,7 +250,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 	@override
 	void visitBlockStmt(BlockStmt expr) {
-		executeBlock(expr.statements, new Environment(_env));
+		executeBlock(expr.statements, new Environment(env));
 
 		return null;
 	}
@@ -308,8 +311,8 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 	@override
 	Object visitFunctionStmt(FunctionStmt stmt) {
-		LoxFunction func = new LoxFunction(stmt, _env, false, false, false);
-		_env.define(stmt.name.lexeme, func);
+		LoxFunction func = new LoxFunction(stmt, env, false, false, false);
+		env.define(stmt.name.lexeme, func);
 		return func;
 	}
 
@@ -331,30 +334,30 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 			}
 		}
 
-		_env.define(stmt.name.lexeme, null);
+		env.define(stmt.name.lexeme, null);
 
 		if (stmt.superclass != null) {
-			_env = new Environment(_env);
-			_env.define('super', superclass);
+			env = new Environment(env);
+			env.define('super', superclass);
 		}
 
 		Map<String, LoxFunction> methods = new HashMap();
 		for (FunctionStmt method in stmt.methods) {
-			LoxFunction func = new LoxFunction(method, _env, method.name.lexeme == 'construct', method.isStatic, method.isGetter);
+			LoxFunction func = new LoxFunction(method, env, method.name.lexeme == 'construct', method.isStatic, method.isGetter);
 			methods[method.name.lexeme] = func;
 		}
 
 		// Provide a default constructor to base class instance
 		if (stmt.superclass == null && !methods.containsKey('construct')) {
 			FunctionStmt functionStmt = new FunctionStmt(null, [], [], false, false);
-			methods['construct'] = new LoxFunction(functionStmt, _env, true, false, false);
+			methods['construct'] = new LoxFunction(functionStmt, env, true, false, false);
 		}
 
 		LoxClass klass = new LoxClass(stmt.name.lexeme, superclass as LoxClass, methods);
 
-		if (superclass != null) _env = _env.parent;
+		if (superclass != null) env = env.parent;
 
-		_env.assign(stmt.name, klass);
+		env.assign(stmt.name, klass);
 
 		return null;
 	}
@@ -391,8 +394,8 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 	@override
 	LoxFunction visitSuperExpr(SuperExpr expr) {
 		int dist = _locals[expr];
-		LoxClass superclass = _env.getAt(dist, 'super');
-		LoxInstance obj = _env.getAt(dist - 1, 'this');
+		LoxClass superclass = env.getAt(dist, 'super');
+		LoxInstance obj = env.getAt(dist - 1, 'this');
 
 		LoxFunction method = superclass.findMethod(expr.method.lexeme);
 
@@ -423,12 +426,15 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 	}
 
   @override
-  void visitImportStmt(ImportStmt stmt) async {
+  void visitImportStmt(ImportStmt stmt) {
+    if (!modules.containsKey(stmt.module.value)) {
       LoxModule module = ModuleResolver.load(stmt.module.value);
+
       List<Stmt> stmts = Parser.fromSource(module.source).parse();
       
       module.statements = stmts;
       interpret(module);
+    }
 
     return null;
   }

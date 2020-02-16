@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'env.dart';
 import 'stmt.dart';
 
 class SourceFile {
@@ -14,7 +13,6 @@ class LoxModule {
   final String name;
   final SourceFile source;
   List<Stmt> statements = [];
-  Environment scope = new Environment(null);
 
   LoxModule(String _name, SourceFile _source): 
     source = _source, name = _name;
@@ -39,7 +37,7 @@ class ModuleResolver {
     String path;
 
     if (!name.startsWith('lox:')) {
-      path = baseDir +  '/' + name.replaceFirst('/', '');
+      path = baseDir.replaceAll(new RegExp('/\\.\$'), '/') + name.replaceFirst(new RegExp('^\\./'), '');
     } else {
       isCore = true;
       path = name.split(':')[1];

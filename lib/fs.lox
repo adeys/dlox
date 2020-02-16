@@ -6,49 +6,68 @@ class File {
     construct(path) {
         assert(is(path, "string"), "Parameter to File constructor must be of type string.");
 
-        this.path = _fs_absolute(path);
-        print 4 /0;
+        this._path = _fs_absolute(path);
     }
 
-    exits() {
-        return _fs_stat_exists(this.path);
+    exists() {
+        return _fs_stat_exists(this._path);
     }
 
     write(content, erase) {
-        if (this.exits()) {
-            return _fs_write_file(this.path, content, erase);
+        if (this.exists()) {
+            return _fs_write_file(this._path, content, erase);
         }
 
         return false;
     }
 
     read() {
-        if (this.exits()) {
-            return _fs_read_file(this.path);   
+        if (this.exists()) {
+            return _fs_read_file(this._path);   
         }
 
         return nil;
     }
 
     rename(name) {
-        if (this.exits()) {
+        if (this.exists()) {
             assert(is(name, "string"), "File name must be of type string.");
-            return _fs_rename_file(this.path, name);
+            if(name = _fs_rename_file(this._path, name)) {
+                this._path = name;print name;
+                return true;
+            }
         }
 
         return false;
     }
 
     copy(location) {
-        if (this.exits()) {
+        if (this.exists()) {
             assert(is(location, "string"), "File name must be of type string.");
-            return _fs_copy_file(this.path, location);
+            let to = File(location);
+            if (_fs_copy_file(this._path, to.path)) {
+                return to;
+            }
+
+            return nil;
+        }
+
+        return nil;
+    }
+
+    create() {
+        return _fs_create_file(this._path);
+    }
+
+    delete() {
+        if (this.exists()) {
+            return _fs_delete_file(this._path);
         }
 
         return false;
     }
 
     path {
-        return this.path;
+        return this._path;
     }
 }

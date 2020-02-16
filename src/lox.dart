@@ -7,19 +7,21 @@ import 'parser.dart';
 import 'stmt.dart';
 
 class Lox {
-
 	static Interpreter _interpreter;
   String _baseDir;
   File script = null;
+  bool isRepl = false;
 	
   Lox() {
     _interpreter = new Interpreter();
   }
 
 	void prompt() {
+    isRepl = true;
 		stdout.writeln('Dart Lox v2.1');
 		stdout.writeln('Hit Ctrl+C to quit\n');
     _baseDir = Directory.current.absolute.path;
+    script = new File(Platform.script.toFilePath().split('/').last);
 
 		while (true) {
 			stdout.write('dlox> ');
@@ -43,7 +45,13 @@ class Lox {
 
 	Object run(String program) {
     ModuleResolver.baseDir = _baseDir;
-    LoxModule module = ModuleResolver.load(script.path);
+    LoxModule module;
+    
+    if (isRepl) {
+      module = new LoxModule("<repl>", new SourceFile("repl", program));
+    } else {
+      module = ModuleResolver.load(script.path);
+    }
 
 		Parser parser = new Parser.fromSource(module.source);
 		List<Stmt> stmts = parser.parse();

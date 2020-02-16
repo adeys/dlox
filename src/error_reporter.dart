@@ -4,8 +4,8 @@ import 'error.dart';
 import 'tokens.dart';
 
 class ErrorReporter {
-  static bool hadError;
-  static bool hadRuntimeError;
+  static bool hadError = false;
+  static bool hadRuntimeError = false;
 
 
 	static void error(String file, int line, String message) {

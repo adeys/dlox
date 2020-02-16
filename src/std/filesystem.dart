@@ -6,8 +6,11 @@ import '../struct.dart';
 
 void registerFilesystem(Environment env) {
   Map<String, NativeFunction> map = {
+    // File management functions
     'absolute': new NativeFunction((Interpreter interpreter, List<Object> args) {
-      return args[0];// file.parent.absolute.path + '/' + args[0].toString().replaceFirst('/', '');
+      return File(interpreter.currentModule.source.file)
+        .parent.path
+        .replaceAll(new RegExp('/\\.\$'), '/') + args[0].toString().replaceAll(new RegExp('^\\./'), '');
     }, 1),
     'stat_exists': new NativeFunction((Interpreter interpreter, List<Object> args) {
       File file = new File(args[0]);
@@ -24,14 +27,33 @@ void registerFilesystem(Environment env) {
     }, 1),
     'rename_file': new NativeFunction((Interpreter interpreter, List<Object> args) {
       File file = new File(args[0]);
-      file.renameSync(args[1]);
-      return true;
+      return file.renameSync(args[1]).absolute.path;
     }, 2),
-    'copy': new NativeFunction((Interpreter interpreter, List<Object> args) {
+    'copy_file': new NativeFunction((Interpreter interpreter, List<Object> args) {
       File file = new File(args[0]);
       file.copySync(args[1]);
       return true;
     }, 2),
+    'create_file': new NativeFunction((Interpreter interpreter, List<Object> args) {
+      try {
+        File file = new File(args[0]);
+        file.createSync(recursive: true);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }, 1),
+    'delete_file': new NativeFunction((Interpreter interpreter, List<Object> args) {
+      try {
+        File file = new File(args[0]);
+        file.deleteSync(recursive: true);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }, 1),
+
+    // Directory management functions
   };
   
   map.forEach((String name, NativeFunction func) {
