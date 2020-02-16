@@ -165,9 +165,8 @@ class Parser {
 		Expr val = null;
 		if (!_match([TokenType.SEMICOLON])) {
 			val = _getExpression();
+		  _consume(TokenType.SEMICOLON,  "Expect ';' after return value.");
 		}
-
-		_consume(TokenType.SEMICOLON,  "Expect ';' after return value.");
 
 		return new ReturnStmt(keyword, val);
 	}
