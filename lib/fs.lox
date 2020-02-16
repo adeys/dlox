@@ -1,16 +1,17 @@
 // Library lox:fs
 
 import "lox:assert";
+import "lox:collections";
 
 class File {
     construct(path) {
         assert(is(path, "string"), "Parameter to File constructor must be of type string.");
 
-        this._path = _fs_absolute(path);
+        this._path = _fs_absolute(path, false);
     }
 
     exists() {
-        return _fs_stat_exists(this._path);
+        return _fs_stat_exists(this._path, false);
     }
 
     write(content, erase) {
@@ -70,4 +71,57 @@ class File {
     path {
         return this._path;
     }
+}
+
+class Directory {
+    construct(path) {
+        this._files = nil;
+        this._path = _fs_absolute(path, true);
+    }
+
+    exists() {
+        return _fs_stat_exists(this._path, true);
+    }
+
+    list() {
+        if (this.exists()) {
+            if (this._files != nil) {
+                return this._files;
+            }
+
+            this._files = _fs_list_dir(this._path);
+            return this._files;
+        }
+
+        return nil;
+    }
+}
+
+class Stat {
+    static exists(path) {
+        let isDir = Stat.isDirectory(path);
+        path = _fs_absolute(path, isDir);
+        return _fs_stat_exists(path, isDir);
+    }
+
+    static isFile(path) {
+        path = _fs_absolute(path, false);
+        return _fs_stat_isfile(path);
+    }
+
+    static isDirectory(path) {
+        path = _fs_absolute(path, true);
+        return _fs_stat_isdir(path);
+    }
+
+    static size(path) {
+        let isDir = Stat.isDirectory(path);
+        path = _fs_absolute(path, isDir);
+        if (_fs_stat_exists(path, isDir)) {
+            return _fs_stat_size(path); 
+        }
+
+        return 0;
+    }
+
 }

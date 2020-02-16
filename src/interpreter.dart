@@ -23,7 +23,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 	Interpreter() {
 		registerStdLib(globals);
 
-		env.parent = globals;
+		env = globals;
 	}
 
 	Object interpret(LoxModule module) {
