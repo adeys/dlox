@@ -1,0 +1,153 @@
+// Library lox:collections
+
+class ListNode {
+    construct(value) {
+        this.value = value;
+        this.prev = nil;
+        this.next = nil;
+    }
+}
+
+class List {
+    construct() {
+        this._size = 0;
+        this.head = nil;
+        this.tail = nil;
+    }
+
+    push(value) {
+        let node = ListNode(value);
+        
+        if (this.head == nil) {
+            this.head = node;
+            this.tail = node;
+        } else {
+            node.prev = this.tail;
+            this.tail.next = node;
+            this.tail = node;
+        }
+
+        this._size = this._size + 1;
+    }
+
+    pop() {
+        if (this._size == 0) {
+            return nil;
+        }
+
+        let node = this.tail;
+        let prev = node.prev;
+        this.tail = prev;
+
+        if (prev != nil) {
+            prev.next = nil;
+        } else {
+            this.head = nil;
+        }
+
+        this._size = this._size - 1;
+        return node.value;
+    }
+
+    get(index) {
+        let node = this.head;
+        
+        let i = 0;
+        while (node != nil) {
+            if (i == index) {
+                return node.value;
+            }
+
+            node = node.next;
+            i = i + 1;
+        }
+
+        return nil;
+    }
+
+    foreach(func) {
+        let node = this.head;
+        while (node != nil) {
+            if (func(node.value)) {
+                return;
+            }
+
+            node = node.next;
+        }
+    }
+
+    map(func) {
+        let list = List();
+        
+        let node = this.head;
+        while (node != nil) {
+            list.push(func(node.value));
+            node = node.next;
+        }
+
+        return list;
+    }
+
+    last {
+        return this.tail == nil ? nil : this.tail.value;
+    }
+
+    first {
+        return this.head == nil ? nil : this.head.value;
+    }
+
+    size {
+        return this._size;
+    }
+}
+
+class MapItem {
+    construct(key, value) {
+        this.key = key;
+        this.value = value;
+    }
+}
+
+class Map {
+    construct() {
+        this.items = List();
+    }
+
+    // Look for given key in map, return MapItem or nil.
+    find(key) {
+        let found;
+        fun findItem(item) {
+            if (item.key == key) {
+                found = item;
+                // Exit foreach loop early after finding it
+                return true;
+            }
+            return false;
+        }
+
+        this.items.foreach(findItem);
+        return found;
+    }
+
+    // Look for given key in map, return value or nil.
+    get(key) {
+        let item = this.find(key);
+        if (item != nil) {
+            return item.value;
+        }
+
+        return nil;
+    }
+
+    // Set given key to value in map. Overwrite if an item with the
+    // given key already exists.
+    set(key, value) {
+        let item = this.find(key);
+        
+        if (item != nil) {
+            item.value = value;
+        } else {
+            this.items.append(MapItem(key, value));
+        }
+    }
+}

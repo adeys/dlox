@@ -1,18 +1,6 @@
-class Stdin {
-    static readline() {
-        return _io_in_read();
-    }
-}
+native class Stdin {}
 
-class Stdout {
-    static write(line) {
-        return _io_out_write(line);
-    }
-
-    static writeln(line) {
-        return _io_out_writeln(line);
-    }
-}
+native class Stdout {}
 
 class Repl {
     static prompt(line, handler) {

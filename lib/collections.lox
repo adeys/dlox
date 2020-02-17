@@ -1,153 +1,89 @@
 // Library lox:collections
 
-class ListNode {
-    construct(value) {
-        this.value = value;
-        this.prev = nil;
-        this.next = nil;
-    }
-}
-
-class List {
+native class List {
     construct() {
-        this._size = 0;
-        this.head = nil;
-        this.tail = nil;
+        this._store = Array();
     }
 
     push(value) {
-        let node = ListNode(value);
-        
-        if (this.head == nil) {
-            this.head = node;
-            this.tail = node;
-        } else {
-            node.prev = this.tail;
-            this.tail.next = node;
-            this.tail = node;
-        }
-
-        this._size = this._size + 1;
+        this._store.add(value);
     }
 
     pop() {
-        if (this._size == 0) {
-            return nil;
-        }
-
-        let node = this.tail;
-        let prev = node.prev;
-        this.tail = prev;
-
-        if (prev != nil) {
-            prev.next = nil;
-        } else {
-            this.head = nil;
-        }
-
-        this._size = this._size - 1;
-        return node.value;
+        return this._store.remove(this._store.length - 1);
     }
 
     get(index) {
-        let node = this.head;
-        
-        let i = 0;
-        while (node != nil) {
-            if (i == index) {
-                return node.value;
-            }
-
-            node = node.next;
-            i = i + 1;
-        }
-
-        return nil;
+        return this._store.get(index);
     }
 
     foreach(func) {
-        let node = this.head;
-        while (node != nil) {
-            if (func(node.value)) {
-                return;
-            }
-
-            node = node.next;
+        for(let i = 0; i < this._store.length; i = i + 1) {
+            func(this.get(i));
         }
     }
 
     map(func) {
         let list = List();
         
-        let node = this.head;
-        while (node != nil) {
-            list.push(func(node.value));
-            node = node.next;
-        }
+        this.foreach(fun (item) {
+            list.push(func(item));
+        });
 
         return list;
     }
 
     last {
-        return this.tail == nil ? nil : this.tail.value;
+        return this.get(this._store.length - 1);
     }
 
     first {
-        return this.head == nil ? nil : this.head.value;
+        return this.get(0);
     }
 
     size {
-        return this._size;
+        return this._store.length;
     }
 }
 
-class MapItem {
-    construct(key, value) {
-        this.key = key;
-        this.value = value;
-    }
-}
-
-class Map {
+native class Map {
     construct() {
-        this.items = List();
-    }
-
-    // Look for given key in map, return MapItem or nil.
-    find(key) {
-        let found;
-        fun findItem(item) {
-            if (item.key == key) {
-                found = item;
-                // Exit foreach loop early after finding it
-                return true;
-            }
-            return false;
-        }
-
-        this.items.foreach(findItem);
-        return found;
+        this._keys = Array();
+        this._items = Array();
+        this._size = 0;
     }
 
     // Look for given key in map, return value or nil.
     get(key) {
-        let item = this.find(key);
-        if (item != nil) {
-            return item.value;
-        }
-
-        return nil;
+        let id = this._findIndex(key);
+        return id == -1 ? nil : this._items.get(id);
     }
 
     // Set given key to value in map. Overwrite if an item with the
     // given key already exists.
     set(key, value) {
-        let item = this.find(key);
-        
-        if (item != nil) {
-            item.value = value;
+        let id = this._findIndex(key);
+        if (id == -1) {
+            this._keys.add(key);
+            this._items.add(value);
+            this._size = this.size + 1;
         } else {
-            this.items.append(MapItem(key, value));
+            this._items.set(id, value);
         }
     }
+
+    _findIndex(key) {
+        let id = -1;
+
+        for(let i = 0; i < this.size; i = i + 1) {
+            if (this._keys.get(i) == key) {
+                id = i;
+                break;
+            }
+        }
+
+        return id;
+    }
+
+    size { return this._size; }
 }

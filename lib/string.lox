@@ -1,51 +1,21 @@
 // Library string
 
-import "lox:assert";
-
-class String {
+native class String {
     construct(str) {
         this.str = str;
     }
 
-    length {
-        assert(is(this.str, "string"), "Expected string parameter in function 'String.length'.");
+    native length;
 
-        return _str_length(this.str);
-    }
+    native toLower();
 
-    toLower() {
-        assert(is(this.str, "string"), "Expected string parameter in function 'String.toLower'.");
+    native toUpper();
 
-        return String(_str_to_lower(this.str));
-    }
+    native trim();
 
-    toUpper() {
-        assert(is(this.str, "string"), "Expected string parameter in function 'String.toUpper'.");
+    native substr(start, end);
 
-        return String(_str_to_upper(this.str));
-    }
+    native startsWith(str);
 
-    trim() {
-        assert(is(this.str, "string"), "Expected string parameter in function 'String.trim'.");
-
-        return String(_str_trim(this.str));
-    }
-
-    substr(start, end) {
-        assert(is(this.str, "string"), "Expected parameter 1 of type string in function 'String.substr'.");
-        assert(is(start, "number"), "Expected parameter 2 of type number in function 'String.substr'.");
-
-        return String(_str_substr(this.str, start, is(end, "number") ? start + end : end));
-    }
-
-    startsWith(str) {
-        assert(is(this.str, "string"), "Expected parameter 1 of type string in function 'String.startsWith'.");
-        assert(is(str, "string"), "Expected parameter 2 of type number in function 'String.startsWith'.");
-
-        return _str_startswith(this.str, str);
-    }
-
-    toString() {
-        return this.str;
-    }
+    native toString();
 }

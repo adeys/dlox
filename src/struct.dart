@@ -22,9 +22,10 @@ class LoxFunction implements LoxCallable {
 	final Environment _closure;
 	final bool _isInit;
   final bool _isGetter;
+  final bool isNative;
 
-	LoxFunction(FunctionStmt stmt, Environment env, bool isInit, bool isGetter): 
-		_stmt = stmt, _closure = env, _isInit = isInit, _isGetter = isGetter {
+	LoxFunction(FunctionStmt stmt, Environment env, bool isInit, bool isGetter, [bool _native = false]): 
+		_stmt = stmt, _closure = env, _isInit = isInit, _isGetter = isGetter, isNative = _native {
 		
 	}
 	
@@ -56,7 +57,7 @@ class LoxFunction implements LoxCallable {
 	LoxFunction bind(LoxInstance instance) {
 		Environment env = new Environment(_closure);
 		env.define('this', instance);
-		return new LoxFunction(_stmt, env, _isInit, _isGetter);
+		return new LoxFunction(_stmt, env, _isInit, _isGetter, isNative);
 	}
 
 	@override
@@ -66,7 +67,7 @@ class LoxFunction implements LoxCallable {
 
 
   bool isGetter() {
-    return _stmt.params == null;
+    return _isGetter;
   }
 }
 
@@ -75,10 +76,13 @@ class LoxClass extends LoxInstance implements LoxCallable {
 	Map<String, LoxCallable> methods = new HashMap();
 	Map<String, LoxCallable> staticMethods = new HashMap();
   final LoxClass _parent;
+  bool isNative;
+  List<String> allowedFields = [];
 
-	LoxClass(String name, LoxClass parent, Map<String, LoxCallable> _methods, Map<String, LoxCallable> _staticMethods): 
+	LoxClass(String name, LoxClass parent, Map<String, LoxCallable> _methods, Map<String, LoxCallable> _staticMethods, [bool isNative = false]): 
     _name = name, _parent = parent, methods = _methods, staticMethods = _staticMethods, super(null) {
       super._class = this;
+      this.isNative = isNative;
     }
 
 	LoxCallable findMethod(String name) {
@@ -168,8 +172,12 @@ class LoxInstance {
 		throw new RuntimeError(field, "Undefined property '${field.lexeme}' in class '${_class._name}'.");
 	}
 
-	void set(Token name, Object value) {
-		_fields[name.lexeme] = value;
+	void set(Token field, Object value) {
+    if (_class.isNative && !_class.allowedFields.contains(field.lexeme)) {
+      throw new RuntimeError(field, "Cannot set property '${field.lexeme}' on native class '${_class._name}'.");
+    }
+
+		_fields[field.lexeme] = value;
 	}
 
 	@override

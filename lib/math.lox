@@ -2,45 +2,20 @@
 
 import "lox:assert";
 
-class Math {
-    static pow(a, b) {
-        assert(is(a, "number"), "Expected parameters of type number in function 'Math.pow'.");
-        assert(is(b, "number"), "Expected parameters of type number in function 'Math.pow'.");
+native class Math {
+    native static pow(a, b);
 
-        return _math_pow(a, b);
-    }
+    native static sin(a);
 
-    static sin(a) {
-        assert(is(a, "number"), "Expected parameters of type number in function 'Math.sin'.");
-        return _math_sin(a); 
-    }
+    native static cos(a);
 
-    static cos(a) {
-        assert(is(a, "number"), "Expected parameters of type number in function 'Math.cos'.");
-        return _math_cos(a); 
-    }
+    native static tan(a);
 
-    static tan(a) {
-        assert(is(a, "number"), "Expected parameters of type number in function 'Math.tan'.");
-        return _math_tan(a); 
-    }
+    native static sqrt(a);
 
-    static sqrt(a) {
-        assert(is(a, "number"), "Expected parameters of type number in function 'Math.sqrt'.");
-        return _math_sqrt(a); 
-    }
-
-    static exp(a) {
-        assert(is(a, "number"), "Expected parameters of type number in function 'Math.exp'.");
-        return _math_exp(a); 
-    }
+    native static exp(a);
     
-    static log(a) {
-        assert(is(a, "number"), "Expected parameters of type number in function 'Math.log'.");
-        return _math_log(a); 
-    }
+    native static log(a);
 
-    static pi {
-        return _math_pi();
-    }
+    native static pi;
 }

@@ -5,6 +5,7 @@ import 'expr.dart';
 import 'interpreter.dart';
 import 'module.dart';
 import 'stmt.dart';
+import 'struct.dart';
 import 'tokens.dart';
 
 enum FunctionType {
@@ -231,6 +232,20 @@ class Resolver implements ExprVisitor, StmtVisitor {
 	void visitClassStmt(ClassStmt stmt) {
 		ClassType enclosing = _currentClass;
 		_currentClass = ClassType.CLASS;
+
+    if (stmt.isNative) {
+      String name = stmt.name.lexeme;
+      int line = stmt.name.line;
+      String file = stmt.name.file;
+
+      if (!_interpreter.natives.containsKey(name)) {
+        ErrorReporter.error(file, line, "Undefined native class '${name}'.");
+      }
+
+      if (_interpreter.natives[name] is! LoxClass) {
+        ErrorReporter.error(file, line, "Native '${name}' is not a class.");
+      }
+    }
 
 		_declare(stmt.name);
 		_define(stmt.name);

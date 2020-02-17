@@ -1,92 +1,135 @@
 import 'dart:io';
 
-import '../env.dart';
 import '../interpreter.dart';
 import '../native.dart';
 import '../struct.dart';
 import '../tokens.dart';
 
-void registerFilesystem(Environment env) {
-  Map<String, NativeFunction> map = {
-    // File management functions
-    'absolute': new NativeFunction((Interpreter interpreter, List<Object> args) {
-      bool isDir = args[1] == true;
-      String base = Directory(interpreter.currentModule.source.file).parent.path;
-			String relative = isDir ? args[0] : args[0].toString();
+class LoxPathClass extends NativeClass {
+  LoxPathClass() : super("Path") {
+    staticMethods = {
+      "resolve": new NativeFunction((Interpreter interpreter, List<Object> args) {
+        bool isDir = args[1] == true;
+        String base = Directory(interpreter.currentModule.source.file).parent.path;
+        String relative = isDir ? args[0] : args[0].toString();
 
-			return Directory(base + '/' + relative).resolveSymbolicLinksSync();
-    }, 2),
-    'stat_exists': new NativeFunction((Interpreter interpreter, List<Object> args) {
-      bool isDir = args[1] == true;
-			var file = isDir ? new Directory(args[0]) : new File(args[0]);
-      return file.existsSync();
-    }, 2),
-    'write_file': new NativeFunction((Interpreter interpreter, List<Object> args) {
-      File file = new File(args[0]);
-      file.writeAsStringSync(args[1], mode: args[2] ? FileMode.write : FileMode.append, flush: true);
-      return true;
-    }, 3),
-    'read_file': new NativeFunction((Interpreter interpreter, List<Object> args) {
-      File file = new File(args[0]);
-      return file.readAsStringSync();
-    }, 1),
-    'rename_file': new NativeFunction((Interpreter interpreter, List<Object> args) {
-      File file = new File(args[0]);
-      return file.renameSync(args[1]).absolute.path;
-    }, 2),
-    'copy_file': new NativeFunction((Interpreter interpreter, List<Object> args) {
-      File file = new File(args[0]);
-      file.copySync(args[1]);
-      return true;
-    }, 2),
-    'create_file': new NativeFunction((Interpreter interpreter, List<Object> args) {
-      try {
-        File file = new File(args[0]);
-        file.createSync(recursive: true);
+        return Directory(base + '/' + relative).resolveSymbolicLinksSync();
+      }, 2),
+    };
+  }
+}
+
+class LoxStatClass extends NativeClass {
+  LoxStatClass() : super("Stat") {
+    NativeFunction exists = new NativeFunction((Interpreter interpreter, List<Object> args) {
+        bool isDir = args[1] == true;
+        var file = isDir ? new Directory(args[0]) : new File(args[0]);
+        return file.existsSync();
+      }, 2);
+
+    staticMethods = {
+      'exists': exists,
+      'isDir': new NativeFunction((Interpreter interpreter, List<Object> args) {
+        return Directory(args[0]).existsSync();
+      }, 1),
+      'isFile': new NativeFunction((Interpreter interpreter, List<Object> args) {
+        return File(args[0]).existsSync();
+      }, 1),
+      'size': new NativeFunction((Interpreter interpreter, List<Object> args) {
+        return exists.callFn(interpreter, [args[0], false])
+          ? (FileStat.statSync(args[0]).size / 1024).toStringAsPrecision(2)
+          : 0;
+      }, 1),
+    };
+  }
+
+}
+
+class LoxFileClass extends NativeClass {
+  LoxFileClass() : super("File") {
+    Token path = new Token(TokenType.STRING, "_path", null, null, null);
+    allowedFields = ['_path'];
+
+    methods = {
+      '_write': new NativeMethod((Interpreter interpreter, List<Object> args) {
+        LoxInstance instance = interpreter.env.getAt(0, "this");
+
+        File file = new File(instance.get(path, interpreter));
+        file.writeAsStringSync(args[0], mode: args[1] ? FileMode.write : FileMode.append, flush: true);
         return true;
-      } catch (_) {
-        return false;
-      }
-    }, 1),
-    'delete_file': new NativeFunction((Interpreter interpreter, List<Object> args) {
-      try {
-        File file = new File(args[0]);
-        file.deleteSync(recursive: true);
+      }, 2),
+      '_read': new NativeMethod((Interpreter interpreter, List<Object> args) {
+        LoxInstance instance = interpreter.env.getAt(0, "this");
+
+        File file = new File(instance.get(path, interpreter));
+        return file.readAsStringSync();
+      }, 0),
+      '_rename': new NativeMethod((Interpreter interpreter, List<Object> args) {
+        LoxInstance instance = interpreter.env.getAt(0, "this");
+
+        File file = new File(instance.get(path, interpreter));
+        return file.renameSync(args[0]).absolute.path;
+      }, 1),
+      '_copy': new NativeMethod((Interpreter interpreter, List<Object> args) {
+        LoxInstance instance = interpreter.env.getAt(0, "this");
+
+        File file = new File(instance.get(path, interpreter));
+        file.copySync(args[0]);
         return true;
-      } catch (_) {
-        return false;
-      }
-    }, 1),
+      }, 1),
+      '_create': new NativeMethod((Interpreter interpreter, List<Object> args) {
+        try {
+          LoxInstance instance = interpreter.env.getAt(0, "this");
 
-    // Directory management functions
-    'list_dir': new NativeFunction((Interpreter interpreter, List<Object> args) {
-			// Assume list class was declared, use it to send back result;
-      Token method = new Token(TokenType.IDENTIFIER, "push", null, null, -1);
-			
-      LoxInstance inst = (env.getAt(0, "List") as LoxClass).callFn(interpreter, []);
-      LoxFunction push = inst.get(method, interpreter);
+          File file = new File(instance.get(path, interpreter));
 
-      Directory dir = new Directory(args[0]);print(args[0]);
-      dir.listSync().forEach((FileSystemEntity entity) {
-        push.callFn(interpreter, [entity.path]);
-      });
+          file.createSync(recursive: true);
+          return true;
+        } catch (_) {
+          return false;
+        }
+      }, 0),
+      '_delete': new NativeMethod((Interpreter interpreter, List<Object> args) {
+        try {
+          LoxInstance instance = interpreter.env.getAt(0, "this");
 
-      return inst;
-    }, 1),
+          File file = new File(instance.get(path, interpreter));
 
-		// Stats related functions
-		'stat_isdir': new NativeFunction((Interpreter interpreter, List<Object> args) {
-			return Directory(args[0]).existsSync();
-    }, 1),
-		'stat_isfile': new NativeFunction((Interpreter interpreter, List<Object> args) {
-			return File(args[0]).existsSync();
-    }, 1),
-		'stat_size': new NativeFunction((Interpreter interpreter, List<Object> args) {
-			return (FileStat.statSync(args[0]).size / 1024).toStringAsPrecision(2);
-    }, 1),
-  };
-  
-  map.forEach((String name, NativeFunction func) {
-    env.define('_fs_$name', func);
-  });
+          file.deleteSync(recursive: true);
+          return true;
+        } catch (_) {
+          return false;
+        }
+      }, 0),
+    };
+  }
+}
+
+class LoxDirectoryClass extends NativeClass {
+  LoxDirectoryClass() : super("Directory") {
+    allowedFields = ['_path', '_files'];
+
+    methods = {
+      '_list': new NativeMethod((Interpreter interpreter, List<Object> args) {
+        // Assume list class was declared, use it to send back result;
+        Token method = new Token(TokenType.IDENTIFIER, "push", null, null, -1);
+        
+        LoxInstance list = (interpreter.globals.getAt(0, "List") as LoxClass).callFn(interpreter, []);
+        LoxFunction push = list.get(method, interpreter);
+
+        LoxInstance instance = interpreter.env.getAt(0, "this");
+
+        Directory dir = new Directory(instance.get(
+          new Token(TokenType.IDENTIFIER, "_path", null, null, null), 
+          interpreter));
+
+        dir.listSync().forEach((FileSystemEntity entity) {
+          push.callFn(interpreter, [entity.path]);
+        });
+
+        return list;
+      }, 0),
+    };
+  }
+
 }

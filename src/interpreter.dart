@@ -18,13 +18,18 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 	final Map<Expr, int> _locals = new HashMap<Expr, int>();
 	Environment env = new Environment(null);
   Map<String, LoxModule> modules =  {};
+  Map<String, LoxCallable> natives =  {};
   LoxModule currentModule;
 
 	Interpreter() {
-		registerStdLib(globals);
+		registerStdLib(this);
 
 		env = globals;
 	}
+
+  void registerNative(String name, LoxCallable) {
+    natives[name] = LoxCallable;
+  }
 
 	Object interpret(LoxModule module) {
 		Object result;
@@ -70,7 +75,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 	String stringify(Object object) {
 		if (object == null) return "nil";
 		// Hack. Work around Java adding ".0" to integer-valued doubles.
-		if (object is double) {
+		if (object is num) {
 			String text = object.toString();
 			if (text.endsWith(".0")) {
 				text = text.substring(0, text.length - 2);
@@ -104,37 +109,35 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 			case TokenType.BANG_EQUAL: return !_isEqual(left, right);
 			case TokenType.LESS: {
 					_checkNumOperands(expr.op, left, right);
-					return (left as double) < (right as double);
+					return (left as num) < (right as num);
 				}
 			case TokenType.LESS_EQUAL: {
 					_checkNumOperands(expr.op, left, right);
-					return (left as double) <= (right as double);
+					return (left as num) <= (right as num);
 				}
 			case TokenType.GREATER_EQUAL: {
 					_checkNumOperands(expr.op, left, right);
-					return (left as double) >= (right as double);
+					return (left as num) >= (right as num);
 				}
 			case TokenType.GREATER: {
 					_checkNumOperands(expr.op, left, right);
-					return (left as double) > (right as double);
+					return (left as num) > (right as num);
 				}
 			case TokenType.MINUS: {
 					_checkNumOperands(expr.op, left, right);
-					return (left as double) - (right as double);
+					return (left as num) - (right as num);
 				}
 			case TokenType.STAR: {
 					_checkNumOperands(expr.op, left, right);
-					return (left as double) * (right as double);
+					return (left as num) * (right as num);
 				}
 			case TokenType.PLUS: {
-				if (left is double) {
-					return left + (right as double);
+				if (left is num) {
+					return left + (right as num);
+				} else if (left is String || right is String) {
+					return stringify(left) + stringify(right);
 				}
-				if (left is String) {
-					return left + (right is String ? right : stringify(right));
-				} else if (right is String) {
-					return right + (left is String ? left : stringify(left));
-				}
+        
 				throw new RuntimeError(expr.op, "Operands must be two numbers or two strings.");
 			}
 			case TokenType.SLASH: {
@@ -142,7 +145,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 				if (right == 0) 
 					throw new RuntimeError(expr.op, "Cannot divide by zero.");
 					
-				return (left as double) / (right as double);
+				return (left as num) / (right as num);
 			}
 			default:
 				break;
@@ -168,7 +171,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 		switch (expr.op.type) {
 			case TokenType.MINUS:{
 				_checkNumOperand(expr.op, right);
-				return -(right as double);
+				return -(right as num);
 			}
 			case TokenType.BANG: return !_isTruthy(right);
 			default: break;
@@ -191,12 +194,12 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 	}
 
 	void _checkNumOperand(Token token, Object value) {
-		if (value is double) return;
+		if (value is num) return;
 		throw new RuntimeError(token, "Operand must be a number.");
 	}
 
 	void _checkNumOperands(Token token, Object left, Object right) {
-		if (left is double && right is double) return;
+		if (left is num && right is num) return;
 		throw new RuntimeError(token, "Operands must be numbers.");
 	}
 
@@ -326,9 +329,35 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 		throw new Return(value);
 	}
 
+
+  void _getNativeClass(ClassStmt stmt) {
+    String name = stmt.name.lexeme;
+    LoxClass klass = natives[name];
+    klass.isNative = true;
+
+    for (FunctionStmt method in stmt.methods) {
+      if (!method.isNative) {
+        LoxFunction func = new LoxFunction(method, env, method.name.lexeme == 'construct', method.isGetter);
+        klass.methods[method.name.lexeme] = func;
+      }
+    }
+
+    for (FunctionStmt method in stmt.staticMethods) {
+      if (!method.isNative) {
+        LoxFunction func = new LoxFunction(method, env, false, method.isGetter);
+        klass.staticMethods[method.name.lexeme] = func;
+      }
+    }
+
+    env.define(name, klass);
+    return;
+  }
+
 	@override
 	void visitClassStmt(ClassStmt stmt) {
-		Object superclass = null;
+		if (stmt.isNative) return _getNativeClass(stmt);
+    
+    Object superclass = null;
 		if (stmt.superclass != null) {
 			superclass = evaluate(stmt.superclass);
 			if (!(superclass is LoxClass)) {
@@ -440,6 +469,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
       LoxModule module = ModuleResolver.load(stmt.module.value);
 
       List<Stmt> stmts = Parser.fromSource(module.source).parse();
+      if (ErrorReporter.hadError) exit(75);
       
       module.statements = stmts;
       interpret(module);

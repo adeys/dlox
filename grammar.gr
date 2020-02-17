@@ -1,9 +1,9 @@
 program → declaration* EOF ;
 
 declaration → classDecl | funDecl | varDecl | statement ;
-classDecl → "class" IDENTIFIER (":" IDENTIFIER)? "{" function* "}" ;
+classDecl → "native"? "class" IDENTIFIER (":" IDENTIFIER)? "{" function* "}" ;
 funDecl → "fun" ( function | lambda ) ;
-function → IDENTIFIER "(" parameters? ")" block ;
+function → "native"? "static"? IDENTIFIER "(" parameters? ")" block ;
 lambda → "(" parameters? ")" block;
 parameters → IDENTIFIER ("," IDENTIFIER)* ; 
 varDecl → "let" IDENTIFIER ( "=" expression )? ";" ;
