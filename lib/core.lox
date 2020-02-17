@@ -1,0 +1,21 @@
+// Library lox:core
+
+class Error {
+    construct(msg, code) {
+        this.message = msg;
+        this.code = code;
+        this.type = "Error";
+    }
+}
+
+class RuntimeError : Error {
+    construct(msg, code) {
+        super.construct(msg, code);
+        this.type = "Runtime Error";
+    }
+}
+
+fun throw(err) {
+    error(err.type + " : " + err.message);
+    exit(err.code);
+}

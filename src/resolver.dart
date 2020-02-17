@@ -359,9 +359,4 @@ class Resolver implements ExprVisitor, StmtVisitor {
     return null;
   }
 
-  @override
-  visitThrowStmt(ThrowStmt stmt) {
-    _resolve(stmt.message);
-    return null;
-  }
 }

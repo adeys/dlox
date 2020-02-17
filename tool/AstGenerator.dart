@@ -37,7 +37,7 @@ class AstGenerator {
 			// Define constructor
 			buffer.writeln('\t${name + base}($types) {');
 			typesList.forEach((String type) {
-				String param = type.trim().split(' ')[1];
+				String param = type.trim().split(' ')[1].replaceAll(new RegExp('\]\$'), '');
 				buffer.writeln('\t\tthis.$param = $param;');
 			});
 			buffer.writeln('\t}\n');

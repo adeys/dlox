@@ -135,20 +135,11 @@ class Parser {
 		if (_match([TokenType.PRINT])) return _getPrintStatement();
 		if (_match([TokenType.RETURN])) return _getReturnStatement();
 		if (_match([TokenType.BREAK])) return _getBreakStatement();
-		if (_match([TokenType.THROW])) return _getThrowStatement();
 		if (_match([TokenType.WHILE])) return _getWhileStatement();
 		if (_match([TokenType.LEFT_BRACE])) return new BlockStmt(_getBlockStatement());
 
 		return _getExprStatement();
 	}
-
-  ThrowStmt _getThrowStatement() {
-    Token keyword = _previous();
-    Expr expr = _getExpression();
-
-    _consume(TokenType.SEMICOLON, "Expect ';' after throw statement.");
-    return new ThrowStmt(keyword, expr);
-  }
 
   ImportStmt _getImportStatement() {
     Token keyword = _previous();
@@ -410,6 +401,7 @@ class Parser {
 
 	Expr _finishCall(Expr expr) {
 		List<Expr> args = [];
+    Token paren = (expr is GetExpr) ? expr.name : (expr is VariableExpr) ? expr.name : null;
 
 		if (!_check(TokenType.RIGHT_PAREN)) {
 			do {
@@ -418,7 +410,7 @@ class Parser {
 			} while (_match([TokenType.COMMA]));
 		}
 
-		Token paren = _consume(TokenType.RIGHT_PAREN, "Expected ')' after arguments list.");
+		_consume(TokenType.RIGHT_PAREN, "Expected ')' after arguments list.");
 
 		return new CallExpr(expr, paren, args);
 	}
