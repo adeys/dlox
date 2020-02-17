@@ -52,23 +52,20 @@ class Parser {
 		_consume(TokenType.LEFT_BRACE, "Expect '{' before class body.");
 		
 		List<FunctionStmt> methods = [];
+		List<FunctionStmt> staticMethods = [];
+
 		while (!_check(TokenType.RIGHT_BRACE) && !eof()) {
-			methods.add(_getFuncDeclaration("method"));
+			(_match([TokenType.STATIC]) ? staticMethods : methods).add(_getFuncDeclaration("method"));
 		} 
 		
 		_consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.");
-		return new ClassStmt(name, superclass, methods);
+		return new ClassStmt(name, superclass, methods, staticMethods);
 	}
 
 	FunctionStmt _getFuncDeclaration(String type) {
 		Token name;
-    bool _static = false;
     bool isMethod = type == 'method';
     bool isGetter = false;
-
-    if (isMethod && _match([TokenType.STATIC])) {
-      _static = true;
-    }
 		
 		if (type == 'lambda') {
 			var anon = '__anon_${Random().nextInt(256)}';
@@ -101,7 +98,7 @@ class Parser {
 		_consume(TokenType.LEFT_BRACE, "Expect '{' before $type body.");
 		List<Stmt> body = _getBlockStatement();
 
-		return new FunctionStmt(name, params, body, _static, isGetter);
+		return new FunctionStmt(name, params, body, isGetter);
 	}
 
 	VarStmt _getVarDeclaration() {

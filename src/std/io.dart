@@ -2,7 +2,7 @@ import 'dart:io';
 
 import '../env.dart';
 import '../interpreter.dart';
-import '../struct.dart';
+import '../native.dart';
 
 void registerIO(Environment env) {
   Map<String, NativeFunction> map = {

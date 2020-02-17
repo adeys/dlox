@@ -257,6 +257,11 @@ class Resolver implements ExprVisitor, StmtVisitor {
 			if (method.name.lexeme ==  'construct') decl = FunctionType.INITIALIZER;
 			_resolveFunction(method, decl);
 		}
+    
+    for (FunctionStmt method in stmt.staticMethods) {
+			FunctionType decl = FunctionType.METHOD;
+			_resolveFunction(method, decl);
+		}
 
 		_endScope();
 		
