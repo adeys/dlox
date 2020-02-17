@@ -29,7 +29,11 @@ class Parser {
 
 	Stmt _getDeclaration() {
 		try {
-			if (_match([TokenType.CLASS])) return _getClassDeclaration();
+      bool isNative = _match([TokenType.NATIVE]);
+      if(isNative && !_check(TokenType.CLASS)) {
+        throw error(_previous(), "Keyword 'native' can only be used in class declaration.");
+      } 
+			if (_match([TokenType.CLASS])) return _getClassDeclaration(isNative);
 			if (_match([TokenType.FUN])) return _getFuncDeclaration('function');
 			if (_match([TokenType.VAR])) return _getVarDeclaration();
 
@@ -40,7 +44,7 @@ class Parser {
 		}
 	}
 
-	ClassStmt _getClassDeclaration() {
+	ClassStmt _getClassDeclaration(bool isNative) {
 		Token name = _consume(TokenType.IDENTIFIER, "Expect class name.");
 
 		VariableExpr superclass = null;
@@ -55,14 +59,19 @@ class Parser {
 		List<FunctionStmt> staticMethods = [];
 
 		while (!_check(TokenType.RIGHT_BRACE) && !eof()) {
-			(_match([TokenType.STATIC]) ? staticMethods : methods).add(_getFuncDeclaration("method"));
+      bool isNative = _match([TokenType.NATIVE]);
+      var store = (_match([TokenType.STATIC]) ? staticMethods : methods);
+      
+      FunctionStmt stmt = _getFuncDeclaration("method", isNative);
+      stmt.isNative = isNative;
+			store.add(stmt);
 		} 
 		
 		_consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.");
-		return new ClassStmt(name, superclass, methods, staticMethods);
+		return new ClassStmt(name, superclass, methods, staticMethods, isNative);
 	}
 
-	FunctionStmt _getFuncDeclaration(String type) {
+	FunctionStmt _getFuncDeclaration(String type, [bool isNative = false]) {
 		Token name;
     bool isMethod = type == 'method';
     bool isGetter = false;
@@ -95,8 +104,14 @@ class Parser {
       _consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.");
     }
 		
-		_consume(TokenType.LEFT_BRACE, "Expect '{' before $type body.");
-		List<Stmt> body = _getBlockStatement();
+    List<Stmt> body = [];
+
+    if (isNative) {
+      _consume(TokenType.SEMICOLON, "Expect ';' after native $type declaration.");
+    } else {
+      _consume(TokenType.LEFT_BRACE, "Expect '{' before $type body.");
+      body = _getBlockStatement();
+    }
 
 		return new FunctionStmt(name, params, body, isGetter);
 	}

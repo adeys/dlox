@@ -30,7 +30,8 @@ class Lexer {
 		"fun": TokenType.FUN,
     "import": TokenType.IMPORT,
     "throw": TokenType.THROW,
-    "static": TokenType.STATIC
+    "static": TokenType.STATIC,
+    "native": TokenType.NATIVE
 	};
 
 	Lexer(SourceFile _source): source = _source, input = _source.source;

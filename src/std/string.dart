@@ -6,33 +6,37 @@ import '../tokens.dart';
 class LoxStringClass extends NativeClass {
   LoxStringClass() : super("String") {
     Token name = new Token(TokenType.STRING, "str", null, null, null);
+    allowedFields = ['str'];
 
     methods = {
       'construct': new NativeMethod((Interpreter interpreter, List<Object> args) {
         LoxInstance instance = interpreter.env.getAt(0, "this");
 
         instance.set(name, args[0].toString());
-      }, null, 1), 
+      }, 1), 
       'length': new NativeMethod((Interpreter interpreter, List<Object> args) {
         LoxInstance instance = interpreter.env.getAt(0, "this");
 
         return instance.get(name, interpreter).toString().length;
-      }, null, -1),
+      }, -1),
       'toLower': new NativeMethod((Interpreter interpreter, List<Object> args) {
         LoxInstance instance = interpreter.env.getAt(0, "this");
 
-        return instance.get(name, interpreter).toString().toLowerCase();
-      }, null, 0),
+        instance.set(name, instance.get(name, interpreter).toString().toLowerCase());
+        return instance;
+      }, 0),
       'toUpper': new NativeMethod((Interpreter interpreter, List<Object> args) {
         LoxInstance instance = interpreter.env.getAt(0, "this");
 
-        return instance.get(name, interpreter).toString().toUpperCase();
-      }, null, 0),
+        instance.set(name, instance.get(name, interpreter).toString().toUpperCase());
+        return instance;
+      }, 0),
       'trim': new NativeMethod((Interpreter interpreter, List<Object> args) {
         LoxInstance instance = interpreter.env.getAt(0, "this");
 
-        return instance.get(name, interpreter).toString().trim();
-      }, null, 0),
+        instance.set(name, instance.get(name, interpreter).toString().trim());
+        return instance;
+      }, 0),
       'substr': new NativeMethod((Interpreter interpreter, List<Object> args) {
         LoxInstance instance = interpreter.env.getAt(0, "this");
 
@@ -43,17 +47,17 @@ class LoxStringClass extends NativeClass {
         } on RangeError {
           return "";
         }
-      }, null, 2),
+      }, 2),
       'startsWith': new NativeMethod((Interpreter interpreter, List<Object> args) {
         LoxInstance instance = interpreter.env.getAt(0, "this");
 
         return instance.get(name, interpreter).toString().startsWith(args[0].toString());
-      }, null, 1),
+      }, 1),
       'toString': new NativeMethod((Interpreter interpreter, List<Object> args) {
         LoxInstance instance = interpreter.env.getAt(0, "this");
 
         return instance.get(name, interpreter).toString();
-      }, null, 1),
+      }, 0),
     };
   }
 

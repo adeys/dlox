@@ -34,9 +34,7 @@ class NativeFunction implements LoxCallable {
 }
 
 class NativeClass extends LoxClass implements LoxCallable {
-  final String _name;
-
-  NativeClass(String name): _name = name, super(name, null, {}, {});
+  NativeClass(String name): super(name, null, {}, {}, true);
 
   LoxCallable findMethod(String name) {
     return methods.containsKey(name) ? methods[name] : null;
@@ -47,14 +45,14 @@ class NativeClass extends LoxClass implements LoxCallable {
 class NativeMethod extends NativeFunction {
   Environment _env;
 
-  NativeMethod(Function callable, Environment env, int arity) : 
+  NativeMethod(Function callable, int arity, [Environment env = null]) : 
     _env = env, super(callable, arity);
 
   @override
   LoxCallable bind(LoxInstance instance) {
 		Environment env = new Environment(_env);
 		env.define('this', instance);
-		return new NativeMethod(callable, env, _arity);
+		return new NativeMethod(callable, _arity, env);
   }
 
   @override

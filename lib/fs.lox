@@ -3,20 +3,35 @@
 import "lox:assert";
 import "lox:collections";
 
-class File {
+native class Path {
+    native resolve(path, isDir);
+}
+
+
+native class Stat {
+    native static exists(path, isDir);
+
+    native static isFile(path);
+
+    native static isDirectory(path);
+
+    native static size(path);
+}
+
+native class File {
     construct(path) {
         assert(is(path, "string"), "Parameter to File constructor must be of type string.");
 
-        this._path = _fs_absolute(path, false);
+        this._path = Path.resolve(path, false);
     }
 
     exists() {
-        return _fs_stat_exists(this._path, false);
+        return Stat.exists(this._path, false);
     }
 
     write(content, erase) {
         if (this.exists()) {
-            return _fs_write_file(this._path, content, erase);
+            return this._write(content, erase);
         }
 
         return false;
@@ -24,7 +39,7 @@ class File {
 
     read() {
         if (this.exists()) {
-            return _fs_read_file(this._path);   
+            return this._read();   
         }
 
         return nil;
@@ -33,8 +48,8 @@ class File {
     rename(name) {
         if (this.exists()) {
             assert(is(name, "string"), "File name must be of type string.");
-            if(name = _fs_rename_file(this._path, name)) {
-                this._path = name;print name;
+            if(name = this._rename(name)) {
+                this._path = name;
                 return true;
             }
         }
@@ -46,7 +61,7 @@ class File {
         if (this.exists()) {
             assert(is(location, "string"), "File name must be of type string.");
             let to = File(location);
-            if (_fs_copy_file(this._path, to.path)) {
+            if (this._copy(to.path)) {
                 return to;
             }
 
@@ -57,12 +72,12 @@ class File {
     }
 
     create() {
-        return _fs_create_file(this._path);
+        return this._create();
     }
 
     delete() {
         if (this.exists()) {
-            return _fs_delete_file(this._path);
+            return this._delete();
         }
 
         return false;
@@ -71,16 +86,28 @@ class File {
     path {
         return this._path;
     }
+
+    native _read();
+
+    native _write(content, erase);
+
+    native _copy(to);
+
+    native _rename(to);
+
+    native _create();
+
+    native _delete();
 }
 
-class Directory {
+native class Directory {
     construct(path) {
         this._files = nil;
-        this._path = _fs_absolute(path, true);
+        this._path = Path.resolve(path, true);
     }
 
     exists() {
-        return _fs_stat_exists(this._path, true);
+        return Stat.exists(this._path, true);
     }
 
     list() {
@@ -89,39 +116,12 @@ class Directory {
                 return this._files;
             }
 
-            this._files = _fs_list_dir(this._path);
+            this._files = this._list();
             return this._files;
         }
 
         return nil;
     }
-}
 
-class Stat {
-    static exists(path) {
-        let isDir = Stat.isDirectory(path);
-        path = _fs_absolute(path, isDir);
-        return _fs_stat_exists(path, isDir);
-    }
-
-    static isFile(path) {
-        path = _fs_absolute(path, false);
-        return _fs_stat_isfile(path);
-    }
-
-    static isDirectory(path) {
-        path = _fs_absolute(path, true);
-        return _fs_stat_isdir(path);
-    }
-
-    static size(path) {
-        let isDir = Stat.isDirectory(path);
-        path = _fs_absolute(path, isDir);
-        if (_fs_stat_exists(path, isDir)) {
-            return _fs_stat_size(path); 
-        }
-
-        return 0;
-    }
-
+    native _list();
 }

@@ -23,12 +23,14 @@ class ClassStmt extends Stmt {
 	VariableExpr superclass;
 	List<FunctionStmt> methods;
 	List<FunctionStmt> staticMethods;
+  bool isNative = false;
 
-	ClassStmt(Token name, VariableExpr superclass, List<FunctionStmt> methods, List<FunctionStmt> staticMethods) {
+	ClassStmt(Token name, VariableExpr superclass, List<FunctionStmt> methods, List<FunctionStmt> staticMethods, bool _native) {
 		this.name = name;
 		this.superclass = superclass;
 		this.methods = methods;
     this.staticMethods = staticMethods;
+    this.isNative = _native;
 	}
 
 	accept(StmtVisitor visitor) {
@@ -55,12 +57,15 @@ class FunctionStmt extends Stmt {
 	List<Token> params;
 	List<Stmt> body;
   bool isGetter = false;
+  bool isNative;
 
-	FunctionStmt(Token name, List<Token> params, List<Stmt> body, bool _getter):
-    isGetter = _getter {
+
+	FunctionStmt(Token name, List<Token> params, List<Stmt> body, bool _getter, [bool _native = false]) {
 		this.name = name;
 		this.params = params;
 		this.body = body;
+    this.isGetter = _getter;
+    this.isNative = _native;
 	}
 
 	accept(StmtVisitor visitor) {
