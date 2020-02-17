@@ -1,6 +1,7 @@
 import '../env.dart';
 import '../error.dart';
 import '../interpreter.dart';
+import '../native.dart';
 import '../struct.dart';
 import 'filesystem.dart';
 import 'io.dart';
@@ -36,8 +37,8 @@ void registerStdLib(Environment env) {
     throw new Exit((args[0] as double).toInt());
   }, 1));
 
-  registerMath(env);
-  registerString(env);
+  env.define("Math", new LoxMathClass());
+  env.define("String", new LoxStringClass());
   registerFilesystem(env);
   registerIO(env);
 }

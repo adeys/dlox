@@ -313,7 +313,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 	@override
 	Object visitFunctionStmt(FunctionStmt stmt) {
-		LoxFunction func = new LoxFunction(stmt, env, false, false, false);
+		LoxFunction func = new LoxFunction(stmt, env, false, false);
 		env.define(stmt.name.lexeme, func);
 		return func;
 	}
@@ -343,19 +343,26 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 			env.define('super', superclass);
 		}
 
-		Map<String, LoxFunction> methods = new HashMap();
+		Map<String, LoxCallable> methods = new HashMap();
+		Map<String, LoxCallable> staticMethods = new HashMap();
+
 		for (FunctionStmt method in stmt.methods) {
-			LoxFunction func = new LoxFunction(method, env, method.name.lexeme == 'construct', method.isStatic, method.isGetter);
+			LoxFunction func = new LoxFunction(method, env, method.name.lexeme == 'construct', method.isGetter);
 			methods[method.name.lexeme] = func;
+		}
+
+    for (FunctionStmt method in stmt.staticMethods) {
+			LoxFunction func = new LoxFunction(method, env, false, method.isGetter);
+			staticMethods[method.name.lexeme] = func;
 		}
 
 		// Provide a default constructor to base class instance
 		if (stmt.superclass == null && !methods.containsKey('construct')) {
-			FunctionStmt functionStmt = new FunctionStmt(null, [], [], false, false);
-			methods['construct'] = new LoxFunction(functionStmt, env, true, false, false);
+			FunctionStmt functionStmt = new FunctionStmt(null, [], [], false);
+			methods['construct'] = new LoxFunction(functionStmt, env, true, false);
 		}
 
-		LoxClass klass = new LoxClass(stmt.name.lexeme, superclass as LoxClass, methods);
+		LoxClass klass = new LoxClass(stmt.name.lexeme, superclass, methods, staticMethods);
 
 		if (superclass != null) env = env.parent;
 

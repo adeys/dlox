@@ -2,6 +2,7 @@ import 'dart:io';
 
 import '../env.dart';
 import '../interpreter.dart';
+import '../native.dart';
 import '../struct.dart';
 import '../tokens.dart';
 

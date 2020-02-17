@@ -11,38 +11,20 @@ abstract class LoxCallable {
 	Object callFn(Interpreter interpreter, List<Object> args);
 
 	int arity();
-}
 
-class NativeFunction implements LoxCallable {
-	Function callable;
-	int _arity = -1;
+  LoxCallable bind(LoxInstance instance);
 
-	NativeFunction(Function callable, int arity) {
-		this.callable = callable;
-		_arity = arity;
-	}
-
-	Object callFn(Interpreter interpreter, List<Object> args) {;
-		return callable(interpreter, args);
-	}
-
-	int arity() {return _arity;}
-
-	@override
-	String toString() {
-		return '<native fn>';
-	}
+  bool isGetter();
 }
 
 class LoxFunction implements LoxCallable {
 	final FunctionStmt _stmt;
 	final Environment _closure;
 	final bool _isInit;
-  final bool _isStatic;
   final bool _isGetter;
 
-	LoxFunction(FunctionStmt stmt, Environment env, bool isInit, bool isStatic, bool isGetter): 
-		_stmt = stmt, _closure = env, _isInit = isInit, _isStatic = isStatic, _isGetter = isGetter {
+	LoxFunction(FunctionStmt stmt, Environment env, bool isInit, bool isGetter): 
+		_stmt = stmt, _closure = env, _isInit = isInit, _isGetter = isGetter {
 		
 	}
 	
@@ -70,29 +52,36 @@ class LoxFunction implements LoxCallable {
 		return null;
 	}
 
+  @override
 	LoxFunction bind(LoxInstance instance) {
 		Environment env = new Environment(_closure);
 		env.define('this', instance);
-		return new LoxFunction(_stmt, env, _isInit, _isStatic, _isGetter);
+		return new LoxFunction(_stmt, env, _isInit, _isGetter);
 	}
 
 	@override
 	String toString() {
 		return '<fn ${_stmt.name.lexeme}>';
 	}
+
+
+  bool isGetter() {
+    return _stmt.params == null;
+  }
 }
 
 class LoxClass extends LoxInstance implements LoxCallable {
 	final String _name;
-	Map<String, LoxFunction> methods = new HashMap();
+	Map<String, LoxCallable> methods = new HashMap();
+	Map<String, LoxCallable> staticMethods = new HashMap();
   final LoxClass _parent;
 
-	LoxClass(String name, LoxClass parent, Map<String, LoxFunction> _methods): 
-    _name = name, _parent = parent, methods = _methods, super(null) {
+	LoxClass(String name, LoxClass parent, Map<String, LoxCallable> _methods, Map<String, LoxCallable> _staticMethods): 
+    _name = name, _parent = parent, methods = _methods, staticMethods = _staticMethods, super(null) {
       super._class = this;
     }
 
-	LoxFunction findMethod(String name) {
+	LoxCallable findMethod(String name) {
 		if (methods.containsKey(name)) {
 			return methods[name];
 		}
@@ -111,7 +100,7 @@ class LoxClass extends LoxInstance implements LoxCallable {
 
 	@override
 	int arity() {
-		LoxFunction init = findMethod('construct');
+		LoxCallable init = findMethod('construct');
 		if (init == null) return 0;
 		return init.arity();
 	}
@@ -119,7 +108,7 @@ class LoxClass extends LoxInstance implements LoxCallable {
 	@override
 	LoxInstance callFn(Interpreter interpreter, List<Object> args) {
 		LoxInstance instance = new LoxInstance(this);
-		LoxFunction init = findMethod('construct');
+		LoxCallable init = findMethod('construct');
 		if (init != null) {
 			init.bind(instance).callFn(interpreter, args);
 		}
@@ -128,21 +117,29 @@ class LoxClass extends LoxInstance implements LoxCallable {
 	}
 
   Object get(Token field, Interpreter interpreter) {
-    LoxFunction val = findMethod(field.lexeme);
+    String name = field.lexeme;
 
-    if (val is LoxFunction && !val._isStatic) {
-      throw new RuntimeError(field, "Cannot call non-static method from class object.");
+    if (staticMethods.containsKey(name)) {
+      LoxCallable func = staticMethods[name].bind(this);
+
+      return func.isGetter() ? func.callFn(interpreter, []) : func;
     }
 
-    if (val != null && val._isGetter) {
-      return val.bind(this).callFn(interpreter, []);
-    }
-
-    return val;
+    throw new RuntimeError(field, "Cannot call non-static method from class object.");
   }
 
   void set(Token name, Object value) {
     throw new RuntimeError(name, "Cannot set field on class object.");
+  }
+
+  @override
+  LoxCallable bind(LoxInstance instance) {
+    return this;
+  }
+
+
+  bool isGetter() {
+    return false;
   }
 }
 
@@ -157,18 +154,18 @@ class LoxInstance {
 			return _fields[field.lexeme];
 		}
 
-		LoxFunction method = _class.findMethod(field.lexeme);
+		LoxCallable method = _class.findMethod(field.lexeme);
 		if (method != null) {
       method = method.bind(this);
 
-      if (method._isGetter) {
+      if (method.isGetter()) {
         return method.callFn(interpreter, []);
       }
 
       return method;
     }
 
-		throw new RuntimeError(field, "Undefined property '${field.lexeme}'.");
+		throw new RuntimeError(field, "Undefined property '${field.lexeme}' in class '${_class._name}'.");
 	}
 
 	void set(Token name, Object value) {
