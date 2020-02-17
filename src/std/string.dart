@@ -53,6 +53,15 @@ class LoxStringClass extends NativeClass {
 
         return instance.get(name, interpreter).toString().startsWith(args[0].toString());
       }, 1),
+      'charCodeAt': new NativeMethod((Interpreter interpreter, List<Object> args) {
+        LoxInstance instance = interpreter.env.getAt(0, "this");
+        int index = (args[0] as num)?.toInt();
+
+        String str = instance.get(name, interpreter).toString();
+        if (index == null || index >= str.length) return -1;
+
+        return str.codeUnitAt(index);
+      }, 1),
       'toString': new NativeMethod((Interpreter interpreter, List<Object> args) {
         LoxInstance instance = interpreter.env.getAt(0, "this");
 

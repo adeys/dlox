@@ -31,6 +31,20 @@ class Interpreter implements ExprVisitor, StmtVisitor {
     natives[name] = LoxCallable;
   }
 
+  void loadModule(String name) {
+    if (!modules.containsKey(name)) {
+      LoxModule module = ModuleResolver.load(name);
+
+      List<Stmt> stmts = Parser.fromSource(module.source).parse();
+      if (ErrorReporter.hadError) exit(75);
+      
+      module.statements = stmts;
+      interpret(module);
+    }
+
+    return null;
+  }
+
 	Object interpret(LoxModule module) {
 		Object result;
     LoxModule old = currentModule;
@@ -50,11 +64,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 			}
 		} on RuntimeError catch (e) {
 			ErrorReporter.runtimeError(e);
-		} on Throw catch (e) {
-      print('Runtime Exception: ${e.value}');
-    } on Exit catch(e) {
-      exit(e.value);
-    }
+		}
 
     currentModule = old;
 		return result;
@@ -303,12 +313,12 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 		List<Object> args = expr.arguments.map((arg) => evaluate(arg)).toList();
 
 		if (!(callee is LoxCallable)) {
-			throw new RuntimeError(expr.paren, "Can only call functions and classes.");
+			throw new RuntimeError(expr.func, "Can only call functions and classes.");
 		}
 
 		LoxCallable function = callee as LoxCallable;
 		if (args.length != function.arity()) {
-			throw new RuntimeError(expr.paren, "Expected ${function.arity()} arguments but got ${args.length}.");
+			throw new RuntimeError(expr.func, "Expected ${function.arity()} argument${function.arity() == 1 ? '' : 's'} to '${expr.func.lexeme}' but got ${args.length}.");
 		}
 
 		return function.callFn(this, args);
@@ -465,21 +475,7 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
   @override
   void visitImportStmt(ImportStmt stmt) {
-    if (!modules.containsKey(stmt.module.value)) {
-      LoxModule module = ModuleResolver.load(stmt.module.value);
-
-      List<Stmt> stmts = Parser.fromSource(module.source).parse();
-      if (ErrorReporter.hadError) exit(75);
-      
-      module.statements = stmts;
-      interpret(module);
-    }
-
-    return null;
+    return loadModule(stmt.module.value);
   }
 
-  @override
-  visitThrowStmt(ThrowStmt stmt) {
-    throw new RuntimeError(stmt.keyword, evaluate(stmt.message));
-  }
 }

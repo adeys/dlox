@@ -21,15 +21,3 @@ class Return {
 class Break {
   
 }
-
-class Throw {
-  final Object value;
-
-  Throw(Object val): value = val;
-}
-
-class Exit {
-  final Object value;
-
-  Exit(Object val): value = val;
-}

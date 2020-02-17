@@ -14,6 +14,7 @@ class Lox {
 	
   Lox() {
     _interpreter = new Interpreter();
+    _interpreter.loadModule('lox:core');
   }
 
 	void prompt() {

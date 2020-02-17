@@ -1,0 +1,508 @@
+// Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+/// Declare integer constants for each ASCII character.
+///
+/// The constants all start with "_" to avoid conflicting with other constants.
+///
+/// For characters that are valid in an identifier, the character itself
+/// follows the "_". For other characters, a symbolic name is used.
+/// In some cases, multiple alternative symbolic names are provided.
+/// Please stick to using one name per character in your code.
+///
+/// The symbolic names are, where applicable, the name of the symbol without
+/// any "mark", "symbol" "sign" or "accent" suffix.
+/// Examples: [_exclamation], [_pipe], [_dollar] and [_grave].
+/// For less common symbols, a selection of common names are used.
+///
+/// For parenthetical markers, there is both a short name, [_lparen]/[_rparen],
+/// and a long name, [_open_paren]/ [_close_paren].
+///
+/// For common HTML entities, the entity names are also usable as symbolic
+/// names: [_apos], [_quot], [_lt], [_gt], and [_amp].
+
+// library charcode.ascii.dollar_lowercase;
+
+// Library lox:ascii;
+
+// Control characters.
+
+/// "Null character" control character.
+let _nul = 0;
+
+/// "Start of Header" control character.
+let _soh = 1;
+
+/// "Start of Text" control character.
+let _stx = 2;
+
+/// "End of Text" control character.
+let _etx = 3;
+
+/// "End of Transmission" control character.
+let _eot = 4;
+
+/// "Enquiry" control character.
+let _enq = 5;
+
+/// "Acknowledgment" control character.
+let _ack = 6;
+
+/// "Bell" control character.
+let _bel = 7;
+
+/// "Backspace" control character.
+let _bs = 8;
+
+/// "Horizontal Tab" control character.
+let _ht = 9;
+
+/// "Horizontal Tab" control character, common name.
+let _tab = 9;
+
+/// "Line feed" control character.
+let _lf = 10;
+
+/// "Vertical Tab" control character.
+let _vt = 11;
+
+/// "Form feed" control character.
+let _ff = 12;
+
+/// "Carriage return" control character.
+let _cr = 13;
+
+/// "Shift Out" control character.
+let _so = 14;
+
+/// "Shift In" control character.
+let _si = 15;
+
+/// "Data Link Escape" control character.
+let _dle = 16;
+
+/// "Device Control 1" control character (oft. XON).
+let _dc1 = 17;
+
+/// "Device Control 2" control character.
+let _dc2 = 18;
+
+/// "Device Control 3" control character (oft. XOFF).
+let _dc3 = 19;
+
+/// "Device Control 4" control character.
+let _dc4 = 20;
+
+/// "Negative Acknowledgment" control character.
+let _nak = 21;
+
+/// "Synchronous idle" control character.
+let _syn = 22;
+
+/// "End of Transmission Block" control character.
+let _etb = 23;
+
+/// "Cancel" control character.
+let _can = 24;
+
+/// "End of Medium" control character.
+let _em = 25;
+
+/// "Substitute" control character.
+let _sub = 26;
+
+/// "Escape" control character.
+let _esc = 27;
+
+/// "File Separator" control character.
+let _fs = 28;
+
+/// "Group Separator" control character.
+let _gs = 29;
+
+/// "Record Separator" control character.
+let _rs = 30;
+
+/// "Unit Separator" control character.
+let _us = 31;
+
+/// "Delete" control character.
+let _del = 31;
+
+// Visible characters.
+
+/// Space character.
+let _space = 32;
+
+/// Character '!'.
+let _exclamation = 33;
+
+/// Character '"', short name.
+let _quot = 34;
+
+/// Character '"'.
+let _quote = 34;
+
+/// Character '"'.
+let _double_quote = 34;
+
+/// Character '"'.
+let _quotation = 34;
+
+/// Character '#'.
+let _hash = 35;
+
+/// Character '$'.
+let _dollar = 36;
+
+/// Character '%'.
+let _percent = 37;
+
+/// Character '&', short name.
+let _amp = 38;
+
+/// Character '&'.
+let _ampersand = 38;
+
+/// Character "'".
+let _apos = 39;
+
+/// Character '''.
+let _apostrophe = 39;
+
+/// Character '''.
+let _single_quote = 39;
+
+/// Character '('.
+let _lparen = 40;
+
+/// Character '('.
+let _open_paren = 40;
+
+/// Character '('.
+let _open_parenthesis = 40;
+
+/// Character ')'.
+let _rparen = 41;
+
+/// Character ')'.
+let _close_paren = 41;
+
+/// Character ')'.
+let _close_parenthesis = 41;
+
+/// Character '*'.
+let _asterisk = 42;
+
+/// Character '+'.
+let _plus = 43;
+
+/// Character ','.
+let _comma = 44;
+
+/// Character '-'.
+let _minus = 45;
+
+/// Character '-'.
+let _dash = 45;
+
+/// Character '.'.
+let _dot = 46;
+
+/// Character '.'.
+let _fullstop = 46;
+
+/// Character '/'.
+let _slash = 47;
+
+/// Character '/'.
+let _solidus = 47;
+
+/// Character '/'.
+let _division = 47;
+
+/// Character '0'.
+let _0 = 48;
+
+/// Character '1'.
+let _1 = 49;
+
+/// Character '2'.
+let _2 = 50;
+
+/// Character '3'.
+let _3 = 51;
+
+/// Character '4'.
+let _4 = 52;
+
+/// Character '5'.
+let _5 = 53;
+
+/// Character '6'.
+let _6 = 54;
+
+/// Character '7'.
+let _7 = 55;
+
+/// Character '8'.
+let _8 = 56;
+
+/// Character '9'.
+let _9 = 57;
+
+/// Character ':'.
+let _colon = 58;
+
+/// Character ';'.
+let _semicolon = 59;
+
+/// Character '<'.
+let _lt = 60;
+
+/// Character '<'.
+let _less_than = 60;
+
+/// Character '<'.
+let _langle = 60;
+
+/// Character '<'.
+let _open_angle = 60;
+
+/// Character '='.
+let _equal = 61;
+
+/// Character '>'.
+let _gt = 62;
+
+/// Character '>'.
+let _greater_than = 62;
+
+/// Character '>'.
+let _rangle = 62;
+
+/// Character '>'.
+let _close_angle = 62;
+
+/// Character '?'.
+let _question = 63;
+
+/// Character '@'.
+let _at = 64;
+
+/// Character 'A'.
+let _A = 65;
+
+/// Character 'B'.
+let _B = 66;
+
+/// Character 'C'.
+let _C = 67;
+
+/// Character 'D'.
+let _D = 68;
+
+/// Character 'E'.
+let _E = 69;
+
+/// Character 'F'.
+let _F = 70;
+
+/// Character 'G'.
+let _G = 71;
+
+/// Character 'H'.
+let _H = 72;
+
+/// Character 'I'.
+let _I = 73;
+
+/// Character 'J'.
+let _J = 74;
+
+/// Character 'K'.
+let _K = 75;
+
+/// Character 'L'.
+let _L = 76;
+
+/// Character 'M'.
+let _M = 77;
+
+/// Character 'N'.
+let _N = 78;
+
+/// Character 'O'.
+let _O = 79;
+
+/// Character 'P'.
+let _P = 80;
+
+/// Character 'Q'.
+let _Q = 81;
+
+/// Character 'R'.
+let _R = 82;
+
+/// Character 'S'.
+let _S = 83;
+
+/// Character 'T'.
+let _T = 84;
+
+/// Character 'U'.
+let _U = 85;
+
+/// Character 'V'.
+let _V = 86;
+
+/// Character 'W'.
+let _W = 87;
+
+/// Character 'X'.
+let _X = 88;
+
+/// Character 'Y'.
+let _Y = 89;
+
+/// Character 'Z'.
+let _Z = 90;
+
+/// Character '['.
+let _lbracket = 91;
+
+/// Character '['.
+let _open_bracket = 91;
+
+/// Character '\'.
+let _backslash = 92;
+
+/// Character ']'.
+let _rbracket = 93;
+
+/// Character ']'.
+let _close_bracket = 93;
+
+/// Character '^'.
+let _circumflex = 94;
+
+/// Character '^'.
+let _caret = 94;
+
+/// Character '^'.
+let _hat = 94;
+
+/// Character '_'.
+let __ = 95;
+
+/// Character '_'.
+let _underscore = 95;
+
+/// Character '_'.
+let _underline = 95;
+
+/// Character '`'.
+let _backquote = 96;
+
+/// Character '`'.
+let _grave = 96;
+
+/// Character 'a'.
+let _a = 97;
+
+/// Character 'b'.
+let _b = 98;
+
+/// Character 'c'.
+let _c = 99;
+
+/// Character 'd'.
+let _d = 100;
+
+/// Character 'e'.
+let _e = 101;
+
+/// Character 'f'.
+let _f = 102;
+
+/// Character 'g'.
+let _g = 103;
+
+/// Character 'h'.
+let _h = 104;
+
+/// Character 'i'.
+let _i = 105;
+
+/// Character 'j'.
+let _j = 106;
+
+/// Character 'k'.
+let _k = 107;
+
+/// Character 'l'.
+let _l = 108;
+
+/// Character 'm'.
+let _m = 109;
+
+/// Character 'n'.
+let _n = 110;
+
+/// Character 'o'.
+let _o = 111;
+
+/// Character 'p'.
+let _p = 112;
+
+/// Character 'q'.
+let _q = 113;
+
+/// Character 'r'.
+let _r = 114;
+
+/// Character 's'.
+let _s = 115;
+
+/// Character 't'.
+let _t = 116;
+
+/// Character 'u'.
+let _u = 117;
+
+/// Character 'v'.
+let _v = 118;
+
+/// Character 'w'.
+let _w = 119;
+
+/// Character 'x'.
+let _x = 120;
+
+/// Character 'y'.
+let _y = 121;
+
+/// Character 'z'.
+let _z = 122;
+
+/// Character '{'.
+let _lbrace = 123;
+
+/// Character '{'.
+let _open_brace = 123;
+
+/// Character '|'.
+let _pipe = 124;
+
+/// Character '|'.
+let _bar = 124;
+
+/// Character '}'.
+let _rbrace = 125;
+
+/// Character '}'.
+let _close_brace = 125;
+
+/// Character '~'.
+let _tilde = 126;

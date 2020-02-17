@@ -29,7 +29,6 @@ class Lexer {
 		"let": TokenType.VAR,
 		"fun": TokenType.FUN,
     "import": TokenType.IMPORT,
-    "throw": TokenType.THROW,
     "static": TokenType.STATIC,
     "native": TokenType.NATIVE
 	};

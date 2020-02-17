@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../env.dart';
 import '../error.dart';
 import '../interpreter.dart';
@@ -36,7 +38,11 @@ void registerStdLib(Interpreter interpreter) {
   }, 1));
 
   env.define('exit', new NativeFunction((Interpreter interpreter, List<Object> args) {
-    throw new Exit((args[0] as double).toInt());
+    exit((args[0] as num)?.toInt() ?? 0);
+  }, 1));
+
+  env.define('error', new NativeFunction((Interpreter interpreter, List<Object> args) {
+    stderr.writeln(args[0].toString());
   }, 1));
 
   env.define('Array', new NativeFunction((Interpreter interpreter, List<Object> args) {

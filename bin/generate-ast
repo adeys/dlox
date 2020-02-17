@@ -16,7 +16,7 @@ main(List<String> argv) {
 			"Assign : Token name, Expr value",
 			"Ternary: Token op, Expr condition, Expr left, Expr right",
 			"Binary : Expr left, Token op, Expr right",
-			"Call : Expr callee, Token paren, List<Expr> arguments",
+			"Call : Expr callee, Token func, List<Expr> arguments",
 			"Get : Expr object, Token name",
 			"Grouping : Expr expr",
 			"Literal : Object value",
@@ -43,17 +43,16 @@ main(List<String> argv) {
 		base = 'Stmt';
 		types = [
 			"Block : List<Stmt> statements",
-			"Class : Token name, VariableExpr superclass, List<FunctionStmt> methods",
+			"Class : Token name, VariableExpr superclass, List<FunctionStmt> methods, List<FunctionStmt> staticMethods, bool isNative",
 			"Expression : Expr expression",
-			"Function : Token name, List<Token> params, List<Stmt> body",
+			"Function : Token name, List<Token> params, List<Stmt> body, bool isGetter, [bool isNative = false]",
 			"If : Expr condition, Stmt thenStmt, Stmt elseStmt",
 			"Print : Expr expression",
 			"Return : Token keyword, Expr value",
 			"Var : Token name, Expr initializer",
 			"While : Expr condition, Stmt body",
 			"Break : Token keyword",
-            "Import : Token keyword, LiteralExpr target",
-            "Throw : Token keyword, LiteralExpr message"
+            "Import : Token keyword, LiteralExpr module"
 		];
 		buffer.clear();
 

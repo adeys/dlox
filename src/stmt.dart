@@ -23,14 +23,14 @@ class ClassStmt extends Stmt {
 	VariableExpr superclass;
 	List<FunctionStmt> methods;
 	List<FunctionStmt> staticMethods;
-  bool isNative = false;
+	bool isNative;
 
-	ClassStmt(Token name, VariableExpr superclass, List<FunctionStmt> methods, List<FunctionStmt> staticMethods, bool _native) {
+	ClassStmt(Token name, VariableExpr superclass, List<FunctionStmt> methods, List<FunctionStmt> staticMethods, [bool isNative = false]) {
 		this.name = name;
 		this.superclass = superclass;
 		this.methods = methods;
-    this.staticMethods = staticMethods;
-    this.isNative = _native;
+		this.staticMethods = staticMethods;
+		this.isNative = isNative;
 	}
 
 	accept(StmtVisitor visitor) {
@@ -56,16 +56,15 @@ class FunctionStmt extends Stmt {
 	Token name;
 	List<Token> params;
 	List<Stmt> body;
-  bool isGetter = false;
-  bool isNative;
+	bool isGetter;
+	bool isNative = false;
 
-
-	FunctionStmt(Token name, List<Token> params, List<Stmt> body, bool _getter, [bool _native = false]) {
+	FunctionStmt(Token name, List<Token> params, List<Stmt> body, bool isGetter, [bool isNative = false]) {
 		this.name = name;
 		this.params = params;
 		this.body = body;
-    this.isGetter = _getter;
-    this.isNative = _native;
+		this.isGetter = isGetter;
+		this.isNative = isNative;
 	}
 
 	accept(StmtVisitor visitor) {
@@ -165,30 +164,14 @@ class BreakStmt extends Stmt {
 class ImportStmt extends Stmt {
 	Token keyword;
 	LiteralExpr module;
-  String target = "";
 
-	ImportStmt(Token keyword, LiteralExpr target) {
+	ImportStmt(Token keyword, LiteralExpr module) {
 		this.keyword = keyword;
-		this.module = target;
+		this.module = module;
 	}
 
 	accept(StmtVisitor visitor) {
 		return visitor.visitImportStmt(this);
-	}
-}
-
-
-class ThrowStmt extends Stmt {
-	Token keyword;
-	Expr message;
-
-	ThrowStmt(Token keyword, Expr message) {
-		this.keyword = keyword;
-		this.message = message;
-	}
-
-	accept(StmtVisitor visitor) {
-		return visitor.visitThrowStmt(this);
 	}
 }
 
@@ -236,10 +219,6 @@ abstract class StmtVisitor {
 	}
 
 	visitImportStmt(ImportStmt expr) {
-		return expr.accept(this);
-	}
-
-	visitThrowStmt(ThrowStmt expr) {
 		return expr.accept(this);
 	}
 
