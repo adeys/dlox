@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:io';
 
 import 'error_reporter.dart';
 import 'expr.dart';
@@ -352,6 +353,8 @@ class Resolver implements ExprVisitor, StmtVisitor {
   void visitImportStmt(ImportStmt stmt) {
     try {
       ModuleResolver.resolve(stmt.module.value);
+    } on FileSystemException catch (err) {
+      ErrorReporter.error(stmt.keyword.file, stmt.keyword.line, err.message);
     } catch (err) {
       ErrorReporter.error(stmt.keyword.file, stmt.keyword.line, err);
     }

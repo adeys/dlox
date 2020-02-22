@@ -21,7 +21,7 @@ class ErrorReporter {
 	}
 
 	static void runtimeError(RuntimeError err) {
-		stderr.writeln(err.message + '\n[line ' + err.token.line.toString() + '](file: ${err.token.file}).');
+		stderr.writeln('[line ' + err.token.line.toString() + '] Runtime Error : ' + err.message + '\n(file: ${err.token.file}).');
 		hadRuntimeError = true;
 	}
 

@@ -34,10 +34,13 @@ class ModuleResolver {
 
   static String resolve(String name) {
     bool isCore = false;
-    String path;
+    String path = name;
 
     if (!name.startsWith('lox:')) {
-      path = Directory(Directory(baseDir).absolute.path + '/' + name).resolveSymbolicLinksSync();
+      File file = File(Directory(baseDir).absolute.path + '/' + name);
+      if (file.existsSync()) {
+        path = file.resolveSymbolicLinksSync();
+      }
     } else {
       isCore = true;
       path = name.split(':')[1];

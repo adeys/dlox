@@ -5,5 +5,5 @@ fun is(var, type) {
 }
 
 fun assert(cond, error) {
-    if (!cond) throw error;
+    if (!cond) throw(error);
 }

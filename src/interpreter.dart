@@ -49,6 +49,10 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 		Object result;
     LoxModule old = currentModule;
     currentModule = module;
+    
+    // Handle import in subdirs
+    String oldDir = ModuleResolver.baseDir;
+    ModuleResolver.baseDir = File(module.source.file).parent.absolute.path;
 
 		Resolver resolver = new Resolver(this);
 		resolver.resolve(module.statements);
@@ -67,6 +71,8 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 		}
 
     currentModule = old;
+    ModuleResolver.baseDir = oldDir;
+
 		return result;
 	}
 
