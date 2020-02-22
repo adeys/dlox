@@ -88,7 +88,7 @@ class LoxArray extends LoxInstance {
   LoxArray() : super(null) {
     methods = {
       'get': new NativeFunction((Interpreter interpreter, List<Object> args) {
-        int index = (args[0] as num)?.toInt();
+        int index = args[0] is num ? (args[0] as num)?.toInt() : null;
         if (index != null) {
           if (index >= _elements.length) return interpreter.stringify(null);
 
@@ -98,7 +98,7 @@ class LoxArray extends LoxInstance {
         return null;
       }, 1),
       'set': new NativeFunction((Interpreter interpreter, List<Object> args) {
-        int index = (args[0] as num)?.toInt();
+        int index = args[0] is num ? (args[0] as num)?.toInt() : null;
         if (index != null) {
           if (index >= _elements.length) return;
 
@@ -109,7 +109,7 @@ class LoxArray extends LoxInstance {
         _elements.add(args[0]);
       }, 1),
       'remove': new NativeFunction((Interpreter interpreter, List<Object> args) {
-        int index = (args[0] as num)?.toInt();
+        int index = args[0] is num ? (args[0] as num)?.toInt() : null;
         if (index != null) {
           _elements.removeAt(index);
         }

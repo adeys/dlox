@@ -5,6 +5,12 @@ native class List {
         this._store = Array();
     }
 
+    static from(array) {
+        let list = List();
+        list._store = array;
+        return list;
+    }
+
     push(value) {
         this._store.add(value);
     }
@@ -75,9 +81,9 @@ native class Map {
     _findIndex(key) {
         let id = -1;
 
-        for(let i = 0; i < this.size; i = i + 1) {
+        for(let i = 0; i < this._size; i = i + 1) {
             if (this._keys.get(i) == key) {
-                id = i;
+                return i;
                 break;
             }
         }

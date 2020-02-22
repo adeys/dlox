@@ -9,8 +9,8 @@ class Error {
 }
 
 class RuntimeError : Error {
-    construct(msg, code) {
-        super.construct(msg, code);
+    construct(msg) {
+        super.construct(msg, 128);
         this.type = "Runtime Error";
     }
 }
