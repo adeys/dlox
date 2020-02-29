@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'env.dart';
 import 'error_reporter.dart';
 import 'interpreter.dart';
 import 'module.dart';
@@ -7,13 +8,17 @@ import 'parser.dart';
 import 'stmt.dart';
 
 class Lox {
+  static final String VERSION = '2.1';
 	static Interpreter _interpreter;
   String _baseDir;
   File script = null;
   bool isRepl = false;
 	
-  Lox() {
-    _interpreter = new Interpreter();
+  Lox(List<String> _argv) {
+    Environment env = new Environment(null);
+    env.define('argv', _argv);
+
+    _interpreter = new Interpreter(env);
     _interpreter.loadModule('lox:core');
   }
 

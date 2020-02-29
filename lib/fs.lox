@@ -1,6 +1,5 @@
 // Library lox:fs
 
-import "lox:assert";
 import "lox:collections";
 
 native class Path {

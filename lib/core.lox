@@ -27,8 +27,6 @@ fun throw(err) {
     exit(err.code);
 }
 
-// Library lox:assert
-
 fun assert(cond, error) {
     if (!cond) throw(AssertionError(error));
 }

@@ -1,7 +1,5 @@
 // Library lox:math
 
-import "lox:assert";
-
 native class Math {
     native static pow(a, b);
 

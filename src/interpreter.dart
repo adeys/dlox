@@ -29,14 +29,14 @@ import 'struct.dart';
 	}
 
 class Interpreter implements ExprVisitor, StmtVisitor {
-	final Environment globals = new Environment(null);
+	final Environment globals;
 	final Map<Expr, int> _locals = new HashMap<Expr, int>();
 	Environment env = new Environment(null);
   Map<String, LoxModule> modules =  {};
   Map<String, LoxCallable> natives =  {};
   LoxModule currentModule;
 
-	Interpreter() {
+	Interpreter(this.globals) {
 		registerStdLib(this);
 
 		env = globals;

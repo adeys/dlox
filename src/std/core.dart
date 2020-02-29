@@ -1,8 +1,10 @@
+import 'dart:collection';
 import 'dart:io';
 
 import '../env.dart';
 import '../error.dart';
 import '../interpreter.dart';
+import '../lox.dart';
 import '../native.dart';
 import '../struct.dart';
 import '../tokens.dart';
@@ -51,6 +53,8 @@ void registerStdLib(Interpreter interpreter) {
     return array;
   }, 0));
 
+  env.define('Process', new LoxProcess(env.get(new Token(TokenType.IDENTIFIER, 'argv', null, '', -1))));
+
   interpreter.registerNative("Math", new LoxMathClass());
   interpreter.registerNative("String", new LoxStringClass());
   interpreter.registerNative("Path", new LoxPathClass());
@@ -74,6 +78,50 @@ class LoxListClass extends NativeClass {
 class LoxMapClass extends NativeClass {
   LoxMapClass() : super("Map") {
     allowedFields = ["_size", "_keys", "_items"];
+  }
+
+}
+
+class LoxProcess extends LoxInstance {
+	final Map<String, Object> _fields = new HashMap();
+  Map<String, NativeFunction> methods;
+  
+  LoxProcess(List<String> argv) : super(null) {
+    _fields['os'] = Platform.operatingSystem;
+    _fields['script'] = Platform.script.toFilePath();
+    _fields['argv'] = new LoxArray(argv.sublist(1));
+    _fields['argc'] = argv.length - 1;
+    _fields['version'] = Lox.VERSION;
+
+    methods = {
+      'filename': new NativeFunction((Interpreter interpreter, List<Object> args) {
+        return interpreter.currentModule.source.file;
+      }, 0),
+      'dirname': new NativeFunction((Interpreter interpreter, List<Object> args) {
+        return new File(interpreter.currentModule.source.file).parent.absolute.path;
+      }, 0),
+    };
+  }
+
+  @override
+  void set(Token field, Object value) {
+    throw new RuntimeError(field, "Cannot add properties to native class 'Process'.");
+  }
+
+  @override
+  Object get(Token field, Interpreter interpreter) {
+    if (_fields.containsKey(field.lexeme)) return _fields[field.lexeme];
+
+    if (methods.containsKey(field.lexeme)) {
+      return methods[field.lexeme];
+    }
+
+		throw new RuntimeError(field, "Undefined property '${field.lexeme}' in class 'Process'.");
+  }
+
+  @override
+  String toString() {
+    return '<native_object Process>';
   }
 
 }
