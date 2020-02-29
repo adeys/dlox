@@ -1,0 +1,34 @@
+program → declaration* EOF ;
+
+declaration → classDecl | funDecl | varDecl | statement ;
+classDecl → "native"? "class" IDENTIFIER (":" IDENTIFIER)? "{" function* "}" ;
+funDecl → "fun" function ;
+function → "native"? "static"? IDENTIFIER "(" parameters? ")" block ;
+lambda → "fun" "(" parameters? ")" block;
+parameters → IDENTIFIER ("," IDENTIFIER)* ; 
+varDecl → "let" IDENTIFIER ( "=" expression )? ";" ;
+
+statement → exprStmt | forStmt | ifStmt | printStmt | returnStmt | whileStmt | breakStmt | importStmt | block ;
+exprStmt → expression ";" ;
+forStmt → "for" "(" ( varDecl | exprStmt | ";" ) expression? ";" expression? ")" statement ;
+ifStmt → "if" "(" expression ")" statement ("else" statement)? ;
+printStmt → "print" expression ";" ;
+returnStmt → "return" expression? ";" ;
+whileStmt → "while" "(" expression ")" statement ;
+breakStmt → "break" ";" ;
+importStmt → "import" STRING ";" ;
+block → "{" declaration* "}" ;
+
+expression → assignment ;
+assignment → (call ".")? IDENTIFIER "=" assignment | ternary ;
+ternary → logic_or ( "?" expression ":" expression )? ";" ;
+logic_or → logic_and ( "or" logic_and )* ;
+logic_and → equality ( "and" equality )* ;
+equality → comparison ( ( "!=" | "==" ) comparison )* ;
+comparison → addition ( ( ">" | ">=" | "<" | "<=" ) addition )* ;
+addition → multiplication ( ( "-" | "+" ) multiplication )* ;
+multiplication → unary ( ( "/" | "*" ) unary )* ;
+unary → ( "!" | "-" ) unary | call ;
+call → primary ("(" arguments? ")" | "." IDENTIFIER)* ;
+arguments → expression ("," expression)* ;
+primary → NUMBER | STRING | "false" | "true" | "nil" | "(" expression ")" | IDENTIFIER | "super" "." IDENTIFIER | lambda;

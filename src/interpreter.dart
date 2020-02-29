@@ -13,6 +13,21 @@ import 'env.dart';
 import 'stmt.dart';
 import 'struct.dart';
 
+
+	String stringify(Object object) {
+		if (object == null) return "nil";
+		// Hack. Work around Java adding ".0" to integer-valued doubles.
+		if (object is num) {
+			String text = object.toString();
+			if (text.endsWith(".0")) {
+				text = text.substring(0, text.length - 2);
+			}
+			return text;
+		} 
+  
+		return object.toString();
+	}
+
 class Interpreter implements ExprVisitor, StmtVisitor {
 	final Environment globals = new Environment(null);
 	final Map<Expr, int> _locals = new HashMap<Expr, int>();
@@ -86,20 +101,6 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 
 	Object evaluate(Expr expr) {
 		return expr.accept(this);
-	}
-
-	String stringify(Object object) {
-		if (object == null) return "nil";
-		// Hack. Work around Java adding ".0" to integer-valued doubles.
-		if (object is num) {
-			String text = object.toString();
-			if (text.endsWith(".0")) {
-				text = text.substring(0, text.length - 2);
-			}
-			return text;
-		} 
-		
-		return object.toString();
 	}
 
 	void executeBlock(List<Stmt> statements, Environment _env) {

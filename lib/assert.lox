@@ -1,9 +1,0 @@
-// Library lox:assert
-
-fun is(var, type) {
-    return typeof(var) == type;
-}
-
-fun assert(cond, error) {
-    if (!cond) throw(error);
-}

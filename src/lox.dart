@@ -29,7 +29,7 @@ class Lox {
 			var res = run(stdin.readLineSync());
 			res == null 
 				? null 
-				: stdout.writeln(_interpreter.stringify(res));
+				: stdout.writeln(stringify(res));
 			ErrorReporter.hadError = false;
 		}
 	} 

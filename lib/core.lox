@@ -15,7 +15,31 @@ class RuntimeError : Error {
     }
 }
 
+class AssertionError : Error {
+    construct(msg) {
+        super.construct(msg, 256);
+        this.type = "Assertion Error";
+    }
+}
+
 fun throw(err) {
     error(err.type + " : " + err.message);
     exit(err.code);
+}
+
+// Library lox:assert
+
+fun assert(cond, error) {
+    if (!cond) throw(AssertionError(error));
+}
+
+fun is(var, type) {
+    return typeof(var) == type;
+}
+
+fun instanceOf(object, className) {
+    assert(is(object, "object"), "Parameter 1 to 'instanceOf' must be of type 'object'.");
+    assert(is(className, "string", "Parameter 2 must be of type 'string'."));
+
+    return object.__type.indexOf(className) != -1;
 }

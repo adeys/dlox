@@ -47,7 +47,6 @@ void registerStdLib(Interpreter interpreter) {
 
   env.define('Array', new NativeFunction((Interpreter interpreter, List<Object> args) {
     LoxArray array = new LoxArray();
-    array.stringify = interpreter.stringify;
 
     return array;
   }, 0));
@@ -81,16 +80,17 @@ class LoxMapClass extends NativeClass {
 
 // Declare builtin 'Array' class
 class LoxArray extends LoxInstance {
-  List<Object> _elements = [];
+  List<Object> _elements;
   Map<String, NativeFunction> methods;
-  Function stringify;
+  Function _stringify = stringify;
 
-  LoxArray() : super(null) {
+  LoxArray([List<Object> elements]) : super(null) {
+    _elements = elements == null ? [] : elements;
     methods = {
       'get': new NativeFunction((Interpreter interpreter, List<Object> args) {
         int index = args[0] is num ? (args[0] as num)?.toInt() : null;
         if (index != null) {
-          if (index >= _elements.length) return interpreter.stringify(null);
+          if (index >= _elements.length) return _stringify(null);
 
           return _elements[index];
         }
@@ -111,8 +111,13 @@ class LoxArray extends LoxInstance {
       'remove': new NativeFunction((Interpreter interpreter, List<Object> args) {
         int index = args[0] is num ? (args[0] as num)?.toInt() : null;
         if (index != null) {
-          _elements.removeAt(index);
+          return _elements.removeAt(index);
         }
+
+        return null;
+      }, 1),
+      'indexOf': new NativeFunction((Interpreter interpreter, List<Object> args) {
+        return _elements.indexOf(args[0]);
       }, 1),
     };
   }
@@ -140,7 +145,7 @@ class LoxArray extends LoxInstance {
     buffer.write("[");
     for (int i = 0; i < _elements.length; i++) {
       if (i != 0) buffer.write(", ");
-      buffer.write(stringify(_elements[i]));
+      buffer.write(_stringify(_elements[i]));
     }
     buffer.write("]");
     

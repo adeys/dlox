@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'env.dart';
 import 'error.dart';
 import 'interpreter.dart';
+import 'std/core.dart';
 import 'stmt.dart';
 import 'tokens.dart';
 
@@ -78,11 +79,19 @@ class LoxClass extends LoxInstance implements LoxCallable {
   final LoxClass _parent;
   bool isNative;
   List<String> allowedFields = [];
+  List<String> _types = [];
 
 	LoxClass(String name, LoxClass parent, Map<String, LoxCallable> _methods, Map<String, LoxCallable> _staticMethods, [bool isNative = false]): 
     _name = name, _parent = parent, methods = _methods, staticMethods = _staticMethods, super(null) {
       super._class = this;
       this.isNative = isNative;
+
+      _types = [_name];
+      
+      while (parent != null) {
+        _types.add(parent._name);
+        parent = parent._parent;
+      }
     }
 
 	LoxCallable findMethod(String name) {
@@ -112,11 +121,13 @@ class LoxClass extends LoxInstance implements LoxCallable {
 	@override
 	LoxInstance callFn(Interpreter interpreter, List<Object> args) {
 		LoxInstance instance = new LoxInstance(this);
-		LoxCallable init = findMethod('construct');
+    instance._fields['__type'] = new LoxArray(_types);
+		
+    LoxCallable init = findMethod('construct');
 		if (init != null) {
 			init.bind(instance).callFn(interpreter, args);
 		}
-
+    
 		return instance;
 	}
 
@@ -173,6 +184,9 @@ class LoxInstance {
 	}
 
 	void set(Token field, Object value) {
+    if (field.lexeme == '__type') {
+      throw new RuntimeError(field, "Cannot set native property '${field.lexeme}' on class '${_class._name}'.");
+    }
     if (_class.isNative && !_class.allowedFields.contains(field.lexeme)) {
       throw new RuntimeError(field, "Cannot set property '${field.lexeme}' on native class '${_class._name}'.");
     }
