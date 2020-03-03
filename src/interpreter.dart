@@ -14,19 +14,19 @@ import 'stmt.dart';
 import 'struct.dart';
 
 
-	String stringify(Object object) {
-		if (object == null) return "nil";
-		// Hack. Work around Java adding ".0" to integer-valued doubles.
-		if (object is num) {
-			String text = object.toString();
-			if (text.endsWith(".0")) {
-				text = text.substring(0, text.length - 2);
-			}
-			return text;
-		} 
-  
-		return object.toString();
-	}
+String stringify(Object object) {
+  if (object == null) return "nil";
+  // Hack. Work around Java adding ".0" to integer-valued doubles.
+  if (object is num) {
+    String text = object.toString();
+    if (text.endsWith(".0")) {
+      text = text.substring(0, text.length - 2);
+    }
+    return text;
+  } 
+
+  return object.toString();
+}
 
 class Interpreter implements ExprVisitor, StmtVisitor {
 	final Environment globals;
@@ -223,13 +223,6 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 	@override
 	Object visitExpressionStmt(ExpressionStmt stmt) {
 		return evaluate(stmt.expression);
-	}
-
-	@override
-	void visitPrintStmt(PrintStmt stmt) {
-		Object val = evaluate(stmt.expression);
-		print(stringify(val));
-		return null;
 	}
 
 	@override

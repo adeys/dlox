@@ -28,6 +28,14 @@ void registerStdLib(Interpreter interpreter) {
     return double.tryParse(args[0].toString());
   }, 1));
 
+  env.define('print', new NativeFunction((Interpreter interpreter, List<Object> args) {
+    return stdout.write(stringify(args[0]));
+  }, 1));
+
+  env.define('println', new NativeFunction((Interpreter interpreter, List<Object> args) {
+    return stdout.writeln(stringify(args[0]));
+  }, 1));
+
   env.define('typeof', new NativeFunction((Interpreter interpreter, List<Object> args) {
     Object arg = args[0];
     if (arg == null) {

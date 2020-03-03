@@ -172,12 +172,6 @@ class Resolver implements ExprVisitor, StmtVisitor {
 	}
 
 	@override
-	void visitPrintStmt(PrintStmt stmt) {
-		_resolve(stmt.expression);
-		return null;
-	}
-
-	@override
 	void visitReturnStmt(ReturnStmt stmt) {
 		if (_currentFunc == FunctionType.NONE) {
 			ErrorReporter.error(stmt.keyword.file, stmt.keyword.line, "Cannot return from top-level code");

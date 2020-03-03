@@ -132,7 +132,6 @@ class Parser {
     if (_match([TokenType.IMPORT])) return _getImportStatement();
 		if (_match([TokenType.FOR])) return _getForStatement();
 		if (_match([TokenType.IF])) return _getIfStatement();
-		if (_match([TokenType.PRINT])) return _getPrintStatement();
 		if (_match([TokenType.RETURN])) return _getReturnStatement();
 		if (_match([TokenType.BREAK])) return _getBreakStatement();
 		if (_match([TokenType.WHILE])) return _getWhileStatement();
@@ -148,13 +147,6 @@ class Parser {
 
     return new ImportStmt(keyword, new LiteralExpr(target.literal));
   }
-
-	PrintStmt _getPrintStatement() {
-		Expr expr = _getExpression();
-		_consume(TokenType.SEMICOLON, "Expect ';' after print value.");
-
-		return new PrintStmt(expr);
-	}
 
 	BreakStmt _getBreakStatement() {
 		Token keyword = _previous();
@@ -507,7 +499,6 @@ class Parser {
 				case TokenType.ELSE:
 				case TokenType.FOR:
 				case TokenType.WHILE:
-				case TokenType.PRINT:
 				case TokenType.RETURN:
 					return;
 				default:

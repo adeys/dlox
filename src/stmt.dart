@@ -90,19 +90,6 @@ class IfStmt extends Stmt {
 }
 
 
-class PrintStmt extends Stmt {
-	Expr expression;
-
-	PrintStmt(Expr expression) {
-		this.expression = expression;
-	}
-
-	accept(StmtVisitor visitor) {
-		return visitor.visitPrintStmt(this);
-	}
-}
-
-
 class ReturnStmt extends Stmt {
 	Token keyword;
 	Expr value;
@@ -195,10 +182,6 @@ abstract class StmtVisitor {
 	}
 
 	visitIfStmt(IfStmt expr) {
-		return expr.accept(this);
-	}
-
-	visitPrintStmt(PrintStmt expr) {
 		return expr.accept(this);
 	}
 

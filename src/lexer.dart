@@ -25,7 +25,6 @@ class Lexer {
 		"if": TokenType.IF,
 		"else": TokenType.ELSE,
 		"return": TokenType.RETURN,
-		"print": TokenType.PRINT,
 		"let": TokenType.VAR,
 		"fun": TokenType.FUN,
     "import": TokenType.IMPORT,

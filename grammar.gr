@@ -8,11 +8,10 @@ lambda → "fun" "(" parameters? ")" block;
 parameters → IDENTIFIER ("," IDENTIFIER)* ; 
 varDecl → "let" IDENTIFIER ( "=" expression )? ";" ;
 
-statement → exprStmt | forStmt | ifStmt | printStmt | returnStmt | whileStmt | breakStmt | importStmt | block ;
+statement → exprStmt | forStmt | ifStmt | returnStmt | whileStmt | breakStmt | importStmt | block ;
 exprStmt → expression ";" ;
 forStmt → "for" "(" ( varDecl | exprStmt | ";" ) expression? ";" expression? ")" statement ;
 ifStmt → "if" "(" expression ")" statement ("else" statement)? ;
-printStmt → "print" expression ";" ;
 returnStmt → "return" expression? ";" ;
 whileStmt → "while" "(" expression ")" statement ;
 breakStmt → "break" ";" ;
