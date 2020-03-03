@@ -1,6 +1,6 @@
-// Library lox:fs
+// Library std:fs
 
-import "lox:collections";
+import "std:collections";
 
 native class Path {
     native resolve(path, isDir);

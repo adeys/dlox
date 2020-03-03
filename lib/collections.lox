@@ -1,4 +1,4 @@
-// Library lox:collections
+// Library std:collections
 
 native class List {
     construct() {
@@ -84,7 +84,6 @@ native class Map {
         for(let i = 0; i < this._size; i = i + 1) {
             if (this._keys.get(i) == key) {
                 return i;
-                break;
             }
         }
 

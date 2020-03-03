@@ -146,7 +146,6 @@ class LoxProcess extends LoxInstance {
 class LoxArray extends LoxInstance {
   List<Object> _elements;
   Map<String, NativeFunction> methods;
-  Function _stringify = stringify;
 
   LoxArray([List<Object> elements]) : super(null) {
     _elements = elements == null ? [] : elements;
@@ -154,7 +153,7 @@ class LoxArray extends LoxInstance {
       'get': new NativeFunction((Interpreter interpreter, List<Object> args) {
         int index = args[0] is num ? (args[0] as num)?.toInt() : null;
         if (index != null) {
-          if (index >= _elements.length) return _stringify(null);
+          if (index >= _elements.length) return stringify(null);
 
           return _elements[index];
         }
@@ -209,7 +208,7 @@ class LoxArray extends LoxInstance {
     buffer.write("[");
     for (int i = 0; i < _elements.length; i++) {
       if (i != 0) buffer.write(", ");
-      buffer.write(_stringify(_elements[i]));
+      buffer.write(stringify(_elements[i]));
     }
     buffer.write("]");
     

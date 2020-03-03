@@ -19,7 +19,7 @@ class Lox {
     env.define('argv', _argv);
 
     _interpreter = new Interpreter(env);
-    _interpreter.loadModule('lox:core');
+    _interpreter.loadModule('std:core');
   }
 
 	void prompt() {

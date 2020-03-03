@@ -1,6 +1,16 @@
+// Library std:io
+
 native class Stdin {}
 
-native class Stdout {}
+native class Stdout {
+    static write(line) {
+        print(line);
+    }
+
+    static writeln(line) {
+        println(line);
+    }
+}
 
 class Repl {
     static prompt(line, handler) {

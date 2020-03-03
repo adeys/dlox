@@ -36,7 +36,7 @@ class ModuleResolver {
     bool isCore = false;
     String path = name;
 
-    if (!name.startsWith('lox:')) {
+    if (!name.startsWith('std:')) {
       File file = File(Directory(baseDir).absolute.path + '/' + name);
       if (file.existsSync()) {
         path = file.resolveSymbolicLinksSync();

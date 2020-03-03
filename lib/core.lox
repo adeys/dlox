@@ -1,4 +1,4 @@
-// Library lox:core
+// Library std:core
 
 class Error {
     construct(msg, code) {

@@ -24,7 +24,7 @@
 
 // library charcode.ascii.dollar_lowercase;
 
-// Library lox:ascii;
+// Library std:ascii;
 
 // Control characters.
 

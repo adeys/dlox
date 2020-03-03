@@ -17,15 +17,6 @@ class LoxStdinClass extends NativeClass {
 class LoxStdoutClass extends NativeClass {
   LoxStdoutClass() : super("Stdout") {
     staticMethods = {
-      'readline': new NativeFunction((Interpreter interpreter, List<Object> args) {
-        return stdin.readLineSync();
-      }, 0),
-      'write': new NativeFunction((Interpreter interpreter, List<Object> args) {
-        return stdout.write(args[0]);
-      }, 1),
-      'writeln': new NativeFunction((Interpreter interpreter, List<Object> args) {
-        return stdout.writeln(args[0]);
-      }, 1),
     };
   }
 

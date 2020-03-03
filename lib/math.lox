@@ -1,4 +1,4 @@
-// Library lox:math
+// Library std:math
 
 native class Math {
     native static pow(a, b);
