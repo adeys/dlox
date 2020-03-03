@@ -8,7 +8,7 @@ import 'parser.dart';
 import 'stmt.dart';
 
 class Lox {
-  static final String VERSION = '2.1';
+  static final String VERSION = '3.2';
 	static Interpreter _interpreter;
   String _baseDir;
   File script = null;
@@ -41,6 +41,12 @@ class Lox {
 
 	void runFile(String file) async {
 		File program = new File(file);
+
+    if (!program.existsSync()) {
+      stderr.writeln("FileSystemError : File '$file' doesn't exist.");
+      exit(75);
+    }
+
     _baseDir = program.parent.absolute.path;
     script = program;
 		run(program.readAsStringSync());

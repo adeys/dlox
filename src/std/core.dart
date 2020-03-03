@@ -20,6 +20,14 @@ void registerStdLib(Interpreter interpreter) {
     return DateTime.now().millisecondsSinceEpoch/1000;
   }, 0));
 
+  env.define('str', new NativeFunction((Interpreter interpreter, List<Object> args) {
+    return stringify(args[0]);
+  }, 1));
+
+  env.define('num', new NativeFunction((Interpreter interpreter, List<Object> args) {
+    return double.tryParse(args[0].toString());
+  }, 1));
+
   env.define('typeof', new NativeFunction((Interpreter interpreter, List<Object> args) {
     Object arg = args[0];
     if (arg == null) {
@@ -89,7 +97,7 @@ class LoxProcess extends LoxInstance {
   LoxProcess(List<String> argv) : super(null) {
     _fields['os'] = Platform.operatingSystem;
     _fields['script'] = Platform.script.toFilePath();
-    _fields['argv'] = new LoxArray(argv.sublist(1));
+    _fields['argv'] = new LoxArray(argv.length != 0 ? argv.sublist(1) : []);
     _fields['argc'] = argv.length - 1;
     _fields['version'] = Lox.VERSION;
 

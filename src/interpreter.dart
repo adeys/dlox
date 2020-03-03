@@ -149,9 +149,9 @@ class Interpreter implements ExprVisitor, StmtVisitor {
 					return (left as num) * (right as num);
 				}
 			case TokenType.PLUS: {
-				if (left is num) {
-					return left + (right as num);
-				} else if (left is String || right is String) {
+				if (left is num && right is num) {
+					return left + right;
+				} else if (left is String && right is String) {
 					return stringify(left) + stringify(right);
 				}
         
